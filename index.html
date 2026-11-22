@@ -1,0 +1,1812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>InkWhisper</title>
+<meta name="description" content="InkWhisper turns recordings and videos into text right in your browser. Nothing is uploaded. No account, no subscription.">
+<meta name="theme-color" content="#0E1030">
+<meta property="og:title" content="InkWhisper">
+<meta property="og:description" content="Speech to text that runs in your browser. Your recordings are never uploaded.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%2316183A'/%3E%3Cpath d='M14 32h4M22 24v16M30 18v28M38 26v12M46 30v4' stroke='%23FFD24A' stroke-width='4' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Onest:wght@400;500;600&family=Unbounded:wght@500;700;800&display=swap">
+<style>
+/* InkWhisper. One world: night for the voice, paper for the written word.
+   Highlighter yellow = "spoken right now" and the single call to action.
+   Layout: sticky 3D story, then left-aligned sections on a 12-column rhythm. */
+:root{
+  --bg:#0E1030;
+  --bg-2:#141741;
+  --surface:#1B1F50;
+  --surface-2:#232862;
+  --line:rgba(180,179,214,.16);
+  --text:#ECEBFA;
+  --muted:#ABAAD2;
+  --hl:#FFD24A;
+  --hl-2:#FFE27F;
+  --lilac:#A99BFF;
+  --paper:#F3F2F7;
+  --paper-2:#E6E6F0;
+  --ink:#16183A;
+  --ink-soft:#4B4E6D;
+  --display:'Unbounded','Arial Black',system-ui,sans-serif;
+  --body:'Onest',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+  --wrap:1240px;
+  --r:22px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+html.lenis,html.lenis body{height:auto}
+.lenis.lenis-smooth{scroll-behavior:auto!important}
+.lenis.lenis-stopped{overflow:hidden}
+body{margin:0;background:var(--bg);color:var(--text);font:17px/1.6 var(--body);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:100;opacity:.05;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+h1,h2,h3{font-family:var(--display);font-weight:700;margin:0;letter-spacing:-0.025em;text-wrap:balance}
+p{margin:0}
+a{color:inherit}
+img,svg{max-width:100%}
+::selection{background:var(--hl);color:var(--ink)}
+:focus-visible{outline:3px solid var(--hl);outline-offset:3px;border-radius:8px}
+.wrap{max-width:var(--wrap);margin:0 auto;padding:0 24px}
+.vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Buttons */
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:54px;padding:0 28px;border-radius:999px;border:0;font:600 16px/1 var(--body);text-decoration:none;cursor:pointer;transition:transform .25s cubic-bezier(.2,.8,.2,1),background-color .25s,box-shadow .25s;white-space:nowrap}
+.btn:hover{transform:translateY(-2px)}
+.btn-buy{background:var(--hl);color:var(--ink);box-shadow:0 10px 30px -10px rgba(255,210,74,.55),inset 0 -2px 0 rgba(0,0,0,.12)}
+.btn-buy:hover{background:var(--hl-2);box-shadow:0 16px 40px -12px rgba(255,210,74,.7),inset 0 -2px 0 rgba(0,0,0,.12)}
+.btn-ghost{background:rgba(236,235,250,.06);color:var(--text);box-shadow:inset 0 0 0 1.5px rgba(236,235,250,.22)}
+.btn-ghost:hover{background:rgba(236,235,250,.1);box-shadow:inset 0 0 0 1.5px rgba(236,235,250,.5)}
+.btn svg{width:18px;height:18px}
+.btn-ink{background:var(--ink);color:var(--paper)}
+
+/* Header */
+.site-head{position:fixed;top:14px;left:0;right:0;z-index:50;pointer-events:none}
+.head-in{pointer-events:auto;max-width:1120px;margin:0 auto;display:flex;align-items:center;gap:24px;min-height:64px;padding:8px 8px 8px 22px;border-radius:999px;background:rgba(20,23,65,.55);backdrop-filter:blur(16px) saturate(1.3);-webkit-backdrop-filter:blur(16px) saturate(1.3);box-shadow:inset 0 0 0 1px rgba(236,235,250,.1),0 20px 40px -24px rgba(0,0,0,.6);transition:background-color .4s}
+.site-head.solid .head-in{background:rgba(20,23,65,.86)}
+.logo{display:inline-flex;align-items:center;gap:10px;font:700 20px/1 var(--display);letter-spacing:-0.03em;text-decoration:none}
+.logo svg{width:30px;height:30px;flex:none}
+.nav{display:flex;align-items:center;gap:4px;margin-left:auto}
+.nav a{padding:10px 14px;border-radius:999px;font-size:15px;color:var(--muted);text-decoration:none;transition:color .2s,background-color .2s}
+.nav a:hover{color:var(--text);background:rgba(236,235,250,.07)}
+.head-buy{min-height:48px;padding:0 22px;font-size:15px}
+.menu-btn{display:none;width:48px;height:48px;border:0;border-radius:50%;background:rgba(236,235,250,.08);color:var(--text);cursor:pointer;margin-left:auto}
+.menu-btn svg{width:22px;height:22px}
+.sheet{display:none}
+@media (max-width:920px){
+  .site-head{top:10px;padding:0 12px}
+  .nav,.head-buy{display:none}
+  .menu-btn{display:grid;place-items:center}
+  .sheet{pointer-events:auto;display:block;max-width:1120px;margin:8px auto 0;border-radius:24px;background:rgba(20,23,65,.96);box-shadow:inset 0 0 0 1px rgba(236,235,250,.1);overflow:hidden;max-height:0;opacity:0;transition:max-height .4s cubic-bezier(.2,.8,.2,1),opacity .3s}
+  .sheet.open{max-height:520px;opacity:1}
+  .sheet nav{display:flex;flex-direction:column;padding:10px}
+  .sheet a{padding:14px 16px;border-radius:14px;text-decoration:none;font-size:17px}
+  .sheet a:hover{background:rgba(236,235,250,.07)}
+  .sheet .btn{margin:6px 10px 14px}
+}
+
+/* Story (sticky 3D) */
+.story{position:relative;height:340vh;background:var(--bg)}
+.stage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden}
+#scene{position:absolute;inset:0;width:100%;height:100%;display:block}
+.scrim{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(14,16,48,.95) 0%,rgba(14,16,48,.7) 34%,rgba(14,16,48,0) 62%),linear-gradient(0deg,rgba(14,16,48,.9) 0%,rgba(14,16,48,0) 22%)}
+.stage-copy{position:relative;z-index:2;height:100%;display:grid;align-items:center;padding-top:80px}
+.copy-a,.copy-b{grid-area:1/1;display:flex;flex-direction:column;gap:28px;will-change:opacity,transform}
+.copy-a{max-width:680px}
+.copy-b{max-width:500px;opacity:0;visibility:hidden}
+.status{align-self:flex-start;display:inline-flex;align-items:center;gap:10px;padding:8px 14px 8px 10px;border-radius:999px;font-size:14px;color:var(--muted);background:rgba(236,235,250,.06);box-shadow:inset 0 0 0 1px var(--line)}
+.status i{width:8px;height:8px;border-radius:50%;background:var(--hl);box-shadow:0 0 0 4px rgba(255,210,74,.18);animation:pulse 2.4s ease-in-out infinite}
+.status[hidden]{display:none}
+@keyframes pulse{50%{box-shadow:0 0 0 8px rgba(255,210,74,0)}}
+.hero-title{font-size:clamp(44px,6.2vw,92px);line-height:.98;font-weight:800;letter-spacing:-0.04em}
+.hero-title .soft{color:var(--muted)}
+.hero-sub{font-size:clamp(18px,1.55vw,21px);color:var(--muted);max-width:540px}
+.hero-ctas{display:flex;flex-wrap:wrap;gap:12px}
+.caption{display:flex;align-items:center;gap:14px;max-width:560px;min-height:58px;padding:10px 18px 10px 12px;border-radius:16px;background:rgba(14,16,48,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:inset 0 0 0 1px var(--line)}
+.caption-rec{display:inline-flex;align-items:center;gap:8px;flex:none;padding:6px 10px;border-radius:10px;font:500 13px/1 var(--mono);color:var(--hl);background:rgba(255,210,74,.1);font-variant-numeric:tabular-nums}
+.caption-rec i{width:7px;height:7px;border-radius:50%;background:#FF6B6B;animation:blink 1.2s steps(2) infinite}
+@keyframes blink{50%{opacity:.2}}
+.caption-text{font-size:17px;line-height:1.4;color:var(--text);min-width:0}
+.caption-text .cw{opacity:.0;transition:opacity .25s;border-radius:4px;padding:1px 2px;margin:0 -2px}
+.caption-text .cw.in{opacity:1}
+.caption-text .cw.now{background:var(--hl);color:var(--ink)}
+.copy-b h2{font-size:clamp(34px,4vw,58px);line-height:1.04;letter-spacing:-0.035em}
+.copy-b p{font-size:clamp(18px,1.55vw,21px);color:var(--muted)}
+.hint{position:absolute;z-index:2;left:50%;bottom:28px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:10px;font-size:13px;color:var(--muted);transition:opacity .6s}
+.hint i{display:block;width:1.5px;height:40px;background:linear-gradient(var(--muted),transparent);animation:drip 2.4s ease-in-out infinite;transform-origin:top}
+@keyframes drip{0%{transform:scaleY(.2);opacity:0}40%{opacity:1}100%{transform:scaleY(1);opacity:0}}
+.no-webgl .stage{background:radial-gradient(60% 50% at 70% 50%,#2D2F78 0%,var(--bg) 70%)}
+@media (max-width:760px){
+  .story{height:280vh}
+  .scrim{background:linear-gradient(180deg,rgba(14,16,48,.1) 0%,rgba(14,16,48,.6) 40%,rgba(14,16,48,.97) 68%)}
+  .stage-copy{align-items:end;padding-bottom:40px}
+  .copy-a{gap:20px}
+  .caption{display:none}
+  .hint{display:none}
+}
+
+/* Section scaffolding */
+.sec{position:relative;padding:140px 0}
+.sec-head{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:24px;align-items:end;margin-bottom:64px}
+.sec-head h2{grid-column:1/span 7;font-size:clamp(36px,4.6vw,64px);line-height:1.02;letter-spacing:-0.035em}
+.sec-head p{grid-column:9/span 4;color:var(--muted);font-size:18px}
+@media (max-width:900px){.sec{padding:100px 0}.sec-head{grid-template-columns:1fr;margin-bottom:44px}.sec-head h2,.sec-head p{grid-column:auto}}
+
+/* App mock (the real app's layout, working demo) */
+.app-stage{perspective:1800px}
+.win{position:relative;border-radius:20px;overflow:hidden;background:var(--bg-2);box-shadow:0 0 0 1px rgba(236,235,250,.12),0 60px 120px -40px rgba(0,0,0,.75),0 0 120px -30px rgba(169,155,255,.28);transform-origin:50% 0;will-change:transform}
+.win-bar{display:flex;align-items:center;gap:16px;height:56px;padding:0 8px 0 18px;border-bottom:1px solid var(--line);background:#11143A}
+.win-bar .logo{font-size:16px}
+.win-bar .logo svg{width:24px;height:24px}
+.win-file{flex:1;min-width:0;display:flex;align-items:baseline;gap:12px;font-size:14px}
+.win-file strong{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.win-file span{color:var(--muted);white-space:nowrap}
+.win-ctrl{display:flex}
+.win-ctrl i{display:grid;place-items:center;width:42px;height:32px}
+.win-ctrl svg{width:12px;height:12px;stroke:var(--muted)}
+.win-body{display:grid;grid-template-columns:320px 1fr;min-height:560px;align-items:stretch}
+.side{display:flex;flex-direction:column;gap:20px;padding:22px;border-right:1px solid var(--line)}
+.player{position:relative;border-radius:14px;overflow:hidden;background:#080A24;aspect-ratio:16/10;display:grid;place-items:center}
+.player::before{content:"";position:absolute;inset:0;background:radial-gradient(70% 60% at 30% 30%,rgba(169,155,255,.35),transparent 60%),radial-gradient(60% 60% at 80% 80%,rgba(255,210,74,.18),transparent 60%)}
+.player-who{position:relative;display:flex;align-items:flex-end;gap:6px;height:44%}
+.player-who b{display:block;width:16%;min-width:22px;border-radius:999px 999px 6px 6px;background:rgba(236,235,250,.18)}
+.play{all:unset;flex:none;display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:var(--hl);color:var(--ink);cursor:pointer;box-shadow:0 8px 20px -6px rgba(255,210,74,.6)}
+.play svg{width:18px;height:18px}
+.play:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.wave{position:relative;height:64px}
+.wave canvas{display:block;width:100%;height:100%}
+.wave input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;margin:0}
+.wave-meta{display:flex;justify-content:space-between;font:500 13px/1 var(--mono);color:var(--muted);font-variant-numeric:tabular-nums;margin-top:-8px}
+.side-label{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{all:unset;cursor:pointer;display:inline-flex;align-items:center;min-height:42px;padding:0 15px;border-radius:999px;font:500 14px/1 var(--body);background:rgba(236,235,250,.07);color:var(--text);transition:background-color .2s}
+.chip:hover{background:rgba(236,235,250,.14)}
+.chip:focus-visible{outline:3px solid var(--hl);outline-offset:2px}
+.copied{font-size:13px;color:var(--hl);min-height:18px}
+.copy-box{display:none;width:100%;min-height:120px;padding:10px;border-radius:10px;border:1px solid var(--line);background:rgba(0,0,0,.25);color:var(--text);font:12px/1.5 var(--mono)}
+.copy-box.show{display:block}
+.paper{display:flex;flex-direction:column;min-width:0;background:var(--paper);color:var(--ink);color-scheme:light}
+.tools{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:16px 22px;border-bottom:1px solid #D4D4E2}
+.search{flex:1 1 260px;display:flex;align-items:center;gap:10px;min-height:46px;padding:0 14px;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1px #D4D4E2}
+.search:focus-within{box-shadow:inset 0 0 0 2px #6C5CE0}
+.search svg{width:18px;height:18px;flex:none;stroke:var(--ink-soft)}
+.search input{all:unset;flex:1;min-width:0;font:16px var(--body);color:var(--ink)}
+.search input::placeholder{color:var(--ink-soft)}
+.count{font-size:13px;color:var(--ink-soft);white-space:nowrap}
+.pill{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;border-radius:999px;font-size:14px;font-weight:600;background:var(--ink);color:var(--paper)}
+.tr{list-style:none;margin:0;padding:12px 12px 20px;flex:1}
+.seg{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:62px 1fr;gap:14px;width:100%;padding:13px 14px;border-radius:12px;font-size:clamp(16px,1.4vw,18px);line-height:1.6;transition:background-color .25s,opacity .25s,box-shadow .25s}
+.seg:hover{background:rgba(22,24,58,.04)}
+.seg:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+.seg .ts{font:500 13px/1 var(--mono);color:var(--ink-soft);padding-top:7px;font-variant-numeric:tabular-nums}
+.seg.on{background:#fff;box-shadow:0 1px 0 #D4D4E2,0 8px 24px -16px rgba(22,24,58,.35)}
+.seg.on .ts{color:var(--ink)}
+.seg.dim{opacity:.32}
+.w{border-radius:4px;padding:1px 2px;margin:0 -2px;transition:background-color .15s,color .15s}
+.seg.on .w.later{color:var(--ink-soft)}
+.w.now{background:var(--hl);color:var(--ink)}
+.w.match{background:rgba(169,155,255,.32);box-shadow:inset 0 -2px 0 #6C5CE0}
+.w.now.match{background:var(--hl)}
+.demo-note{margin-top:18px;font-size:14px;color:var(--muted)}
+@media (max-width:860px){
+  .win-body{grid-template-columns:1fr;min-height:0}
+  .win-ctrl,.win-file span,.tools .pill{display:none}
+  .copied:empty{display:none}
+  .side{border-right:0;border-bottom:1px solid var(--line)}
+  .player{display:none}
+  .win-bar .logo span{display:none}
+}
+.side-top{display:flex;align-items:center;gap:14px}
+.side-top .wave{flex:1}
+
+/* Bento */
+.bento{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:18px}
+.tile{position:relative;display:flex;flex-direction:column;gap:14px;min-height:300px;padding:30px;border-radius:var(--r);background:linear-gradient(180deg,rgba(236,235,250,.055),rgba(236,235,250,.02));box-shadow:inset 0 0 0 1px var(--line);overflow:hidden}
+.tile h3{font-size:22px;line-height:1.2}
+.tile p{color:var(--muted);font-size:16px;max-width:420px}
+.tile .demo{margin-top:auto}
+.t-a{grid-column:span 4;background:radial-gradient(80% 120% at 100% 0%,rgba(255,210,74,.12),transparent 55%),linear-gradient(180deg,rgba(236,235,250,.06),rgba(236,235,250,.02))}
+.t-b{grid-column:span 2}
+.t-c,.t-d,.t-e{grid-column:span 2}
+.tile .karaoke{max-width:none;font:600 clamp(22px,2.4vw,32px)/1.35 var(--body);letter-spacing:-0.01em;color:rgba(236,235,250,.32)}
+.karaoke span{border-radius:6px;padding:0 3px;margin:0 -3px;transition:color .2s,background-color .2s}
+.karaoke span.done{color:var(--text)}
+.karaoke span.now{background:var(--hl);color:var(--ink)}
+.lang{height:84px;overflow:hidden;position:relative;mask-image:linear-gradient(180deg,transparent,#000 14%,#000 86%,transparent);-webkit-mask-image:linear-gradient(180deg,transparent,#000 14%,#000 86%,transparent)}
+.lang-track{display:flex;flex-direction:column;transition:transform .7s cubic-bezier(.7,0,.2,1)}
+.lang-track div{height:84px;display:flex;flex-direction:column;justify-content:center}
+.lang-track b{display:inline-block;white-space:nowrap;font:800 40px/1.25 var(--display);letter-spacing:-0.03em;transform-origin:0 50%}
+.lang-foot{font:500 13px/1 var(--mono);color:var(--hl);margin:6px 0 14px;font-variant-numeric:tabular-nums}
+.ticker{overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.ticker-in{display:flex;width:max-content;gap:18px;font-size:14px;color:var(--muted);white-space:nowrap;animation:tick 160s linear infinite}
+@keyframes tick{to{transform:translateX(-50%)}}
+.lang-track small{font:500 13px/1.6 var(--mono);color:var(--muted)}
+.offline{display:flex;flex-direction:column;gap:14px}
+.toggle{display:flex;align-items:center;gap:12px;font-size:15px}
+.switch{position:relative;width:52px;height:30px;border-radius:999px;background:rgba(236,235,250,.18);transition:background-color .4s}
+.switch::after{content:"";position:absolute;top:4px;left:4px;width:22px;height:22px;border-radius:50%;background:#fff;transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+.offline.on .switch{background:var(--hl)}
+.offline.on .switch::after{transform:translateX(22px)}
+.mini-bar{height:8px;border-radius:999px;background:rgba(236,235,250,.1);overflow:hidden}
+.mini-bar i{display:block;height:100%;width:0;background:var(--lilac);border-radius:inherit}
+.off-note{font:500 13px/1 var(--mono);color:var(--muted)}
+.fake-search{display:flex;align-items:center;gap:10px;min-height:46px;padding:0 14px;border-radius:12px;background:rgba(236,235,250,.07);box-shadow:inset 0 0 0 1px var(--line);font:500 15px/1 var(--mono)}
+.fake-search svg{width:16px;height:16px;stroke:var(--muted)}
+.caret{display:inline-block;width:2px;height:18px;background:var(--hl);margin-left:1px;animation:blink 1s steps(2) infinite;vertical-align:-3px}
+.found{margin-top:12px;font-size:17px}
+.found mark{background:rgba(169,155,255,.32);color:var(--text);box-shadow:inset 0 -2px 0 var(--lilac);border-radius:4px;padding:0 3px}
+.srt{margin:0;min-height:118px;padding:14px 16px;border-radius:12px;background:#0A0C26;box-shadow:inset 0 0 0 1px var(--line);font:500 13px/1.6 var(--mono);color:var(--muted);white-space:pre-wrap}
+.srt b{color:var(--hl);font-weight:500}
+@media (max-width:980px){.t-a{grid-column:span 6}.t-b{grid-column:span 6}.t-c,.t-d,.t-e{grid-column:span 6}.tile{min-height:0}}
+@media (min-width:640px) and (max-width:980px){.t-b,.t-c{grid-column:span 3}.t-d,.t-e{grid-column:span 3}}
+
+/* Steps timeline */
+.steps{position:relative;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.steps::before,.steps::after{content:"";position:absolute;left:28px;right:28px;top:28px;height:2px;background:var(--line)}
+.steps::after{background:linear-gradient(90deg,var(--lilac),var(--hl));transform-origin:0 50%;transform:scaleX(var(--p,0))}
+.step{position:relative;display:flex;flex-direction:column;gap:14px}
+.step-dot{position:relative;z-index:1;display:grid;place-items:center;width:56px;height:56px;border-radius:50%;background:var(--bg);box-shadow:inset 0 0 0 2px var(--line);font:700 18px/1 var(--display);color:var(--muted);transition:box-shadow .4s,color .4s,background-color .4s}
+.step.lit .step-dot{background:var(--hl);color:var(--ink);box-shadow:0 0 0 6px rgba(255,210,74,.15)}
+.step h3{font-size:24px;margin-top:10px}
+.step p{color:var(--muted);max-width:340px}
+.step .tag{align-self:flex-start;font:500 13px/1 var(--mono);color:var(--muted);padding:6px 10px;border-radius:8px;background:rgba(236,235,250,.06)}
+@media (max-width:820px){.steps{grid-template-columns:1fr;gap:40px}.steps::before,.steps::after{left:27px;right:auto;top:28px;bottom:28px;width:2px;height:auto}.steps::after{transform-origin:50% 0;transform:scaleY(var(--p,0))}.step{padding-left:80px}.step-dot{position:absolute;left:0;top:0}.step h3{margin-top:12px}}
+
+/* Privacy */
+.priv{border-radius:32px;padding:clamp(28px,5vw,64px);background:radial-gradient(60% 80% at 100% 100%,rgba(255,210,74,.08),transparent 60%),var(--bg-2);box-shadow:inset 0 0 0 1px var(--line)}
+.paths{display:flex;flex-direction:column;gap:26px;margin:8px 0 56px}
+.path{display:grid;grid-template-columns:220px 1fr;gap:14px 28px;align-items:center}
+.path-name{font-weight:600;color:var(--muted)}
+.path.local .path-name{color:var(--text)}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:0}
+.node{display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:0 18px;border-radius:999px;font-size:16px;white-space:nowrap}
+.node svg{width:18px;height:18px}
+.cloud .node{color:var(--muted);box-shadow:inset 0 0 0 1.5px rgba(180,179,214,.3)}
+.cloud .node.risk{background:repeating-linear-gradient(135deg,rgba(255,120,120,.10) 0 6px,transparent 6px 12px);box-shadow:inset 0 0 0 1.5px rgba(255,140,140,.35);color:#FFB4B4}
+.local .node{background:rgba(236,235,250,.08)}
+.local .node.pc{background:var(--hl);color:var(--ink);font-weight:600;box-shadow:0 0 40px -6px rgba(255,210,74,.5)}
+.link{position:relative;width:46px;height:2px;margin:0 6px;background:rgba(180,179,214,.25);overflow:hidden;border-radius:2px}
+.link::after{content:"";position:absolute;top:0;left:-40%;width:40%;height:100%;border-radius:2px;animation:flow 1.8s linear infinite}
+.cloud .link::after{background:#FF9A9A}
+.local .link::after{background:var(--hl)}
+.local .link:nth-child(4)::after,.cloud .link:nth-child(4)::after{animation-delay:.6s}
+.cloud .link:nth-child(6)::after{animation-delay:1.2s}
+@keyframes flow{to{left:100%}}
+.facts{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 36px}
+.facts li{padding-top:22px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.facts strong{font-size:18px;font-weight:600}
+.facts span{color:var(--muted)}
+@media (max-width:820px){.path{grid-template-columns:1fr}.facts{grid-template-columns:1fr;gap:22px}.link{width:22px}}
+
+/* Pricing */
+.price-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:32px;align-items:center}
+.price-copy{grid-column:1/span 6}
+.price-card{grid-column:8/span 5}
+.inc{list-style:none;margin:36px 0 36px;padding:0;display:flex;flex-direction:column}
+.inc li{display:flex;gap:14px;align-items:flex-start;padding:16px 0;border-top:1px solid var(--line);font-size:18px}
+.inc li:last-child{border-bottom:1px solid var(--line)}
+.inc svg{width:22px;height:22px;flex:none;margin-top:3px;stroke:var(--hl)}
+.pay h3{font:600 17px/1.3 var(--body);letter-spacing:0;margin-bottom:12px}
+.pay ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:8px;color:var(--muted)}
+.card-wrap{perspective:1200px;display:flex;justify-content:center;padding:20px 0}
+.lic{position:relative;width:min(440px,100%);border-radius:28px;padding:34px 32px 30px;background:linear-gradient(160deg,#262B6E 0%,#171A47 60%);color:var(--text);display:flex;flex-direction:column;gap:22px;transform:rotateY(-12deg) rotateX(6deg);transform-style:preserve-3d;transition:transform .7s cubic-bezier(.2,.7,.2,1);box-shadow:0 2px 0 #0B0D2A,0 4px 0 #0B0D2A,0 6px 0 #0B0D2A,0 50px 90px -30px rgba(0,0,0,.8),0 0 0 1px rgba(236,235,250,.12) inset;--gx:30%;--gy:20%}
+.lic::before{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:radial-gradient(460px circle at var(--gx) var(--gy),rgba(169,155,255,.34),transparent 45%),conic-gradient(from 210deg at var(--gx) var(--gy),transparent,rgba(255,210,74,.08),transparent 30%)}
+.lic::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background-image:radial-gradient(rgba(236,235,250,.1) 1px,transparent 1px);background-size:14px 14px;mask-image:linear-gradient(160deg,#000,transparent 60%);-webkit-mask-image:linear-gradient(160deg,#000,transparent 60%)}
+.lic > *{position:relative;z-index:1}
+.lic-top{display:flex;justify-content:space-between;align-items:center;font-size:15px;color:var(--muted)}
+.lic-top .logo{font-size:18px;color:var(--text)}
+.lic-chip{width:46px;height:34px;border-radius:8px;background:linear-gradient(135deg,#FFE27F,#C9A12E);box-shadow:inset 0 0 0 1px rgba(0,0,0,.2)}
+.lic-price{font:800 clamp(58px,6vw,76px)/1 var(--display);letter-spacing:-0.04em}
+.lic-note{font-size:14px;color:var(--muted);margin-top:-12px}
+.lic-key{font:500 15px/1 var(--mono);letter-spacing:.1em;color:var(--muted);padding:15px 16px;border-radius:12px;background:rgba(0,0,0,.2);box-shadow:inset 0 0 0 1px var(--line)}
+.lic .btn-buy{width:100%;min-height:58px;font-size:17px}
+.lic-secure{display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;color:var(--muted)}
+.lic-secure svg{width:16px;height:16px;stroke:currentColor}
+@media (max-width:900px){.price-copy,.price-card{grid-column:1/-1}}
+
+/* FAQ */
+.faq-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:32px}
+.faq-side{grid-column:1/span 4;align-self:start;position:sticky;top:120px}
+.faq-side h2{font-size:clamp(36px,4.6vw,64px);line-height:1.02;letter-spacing:-0.035em;margin-bottom:20px}
+.faq-side p{color:var(--muted)}
+.faq{grid-column:6/span 7;display:flex;flex-direction:column}
+.faq details{border-top:1px solid var(--line)}
+.faq details:last-child{border-bottom:1px solid var(--line)}
+.faq summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:20px;padding:26px 0;font:600 19px/1.35 var(--body)}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary span.plus{position:relative;flex:none;width:36px;height:36px;border-radius:50%;background:rgba(236,235,250,.07);transition:background-color .3s,transform .4s cubic-bezier(.2,.8,.2,1)}
+.faq summary span.plus::before,.faq summary span.plus::after{content:"";position:absolute;left:50%;top:50%;width:14px;height:2px;margin:-1px 0 0 -7px;background:var(--text);border-radius:2px}
+.faq summary span.plus::after{transform:rotate(90deg)}
+.faq details[open] summary span.plus{transform:rotate(45deg);background:var(--hl)}
+.faq details[open] summary span.plus::before,.faq details[open] summary span.plus::after{background:var(--ink)}
+.faq details p{padding:0 56px 26px 0;color:var(--muted)}
+.faq details p.lang-list{font-size:15px;line-height:1.75}
+@media (max-width:900px){.faq-side,.faq{grid-column:1/-1}.faq-side{position:static}}
+
+/* Final call */
+.final{position:relative;overflow:hidden;border-radius:36px;padding:clamp(40px,7vw,96px);background:var(--hl);color:var(--ink)}
+.final h2{font-size:clamp(40px,6.4vw,96px);line-height:.98;letter-spacing:-0.045em;font-weight:800;max-width:900px}
+.final p{font-size:20px;margin:24px 0 36px;max-width:560px;color:#3A3C24}
+.final .btn-buy{background:var(--ink);color:var(--paper);box-shadow:0 14px 34px -12px rgba(22,24,58,.6)}
+.final .btn-buy:hover{background:#23265A}
+.final .btn-ghost{color:var(--ink);box-shadow:inset 0 0 0 1.5px rgba(22,24,58,.35);background:transparent}
+.final-wave{position:absolute;right:-40px;bottom:-30px;width:min(620px,70%);opacity:.9;pointer-events:none}
+.final-wave path{fill:none;stroke:var(--ink);stroke-width:3;stroke-linecap:round;stroke-dasharray:1400;stroke-dashoffset:1400;opacity:.18}
+.final.in .final-wave path{animation:draw 2.6s cubic-bezier(.6,0,.2,1) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.final > *:not(svg){position:relative}
+
+/* Footer */
+.foot{padding:80px 0 40px;color:var(--muted);font-size:15px}
+.foot-mark{font:800 clamp(64px,15vw,220px)/.85 var(--display);letter-spacing:-0.06em;color:transparent;-webkit-text-stroke:1.5px rgba(236,235,250,.18);margin:0 0 40px;white-space:nowrap;overflow:hidden}
+.foot-row{display:flex;flex-wrap:wrap;justify-content:space-between;gap:24px;padding-top:28px;border-top:1px solid var(--line)}
+.foot a{color:var(--text)}
+.foot-links{display:flex;flex-wrap:wrap;gap:8px 24px}
+
+/* Dialogs */
+dialog{border:0;padding:0;border-radius:24px;max-width:min(560px,calc(100% - 32px));background:var(--paper);color:var(--ink);box-shadow:0 40px 80px -20px rgba(0,0,0,.7)}
+dialog::backdrop{background:rgba(10,11,32,.72);backdrop-filter:blur(6px)}
+.dlg{display:flex;flex-direction:column;gap:18px;padding:34px 32px 30px}
+.dlg h2{font-size:28px;line-height:1.15}
+.dlg p{color:var(--ink-soft)}
+.dlg ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:10px}
+.dlg .small{font-size:14px;padding:12px 14px;border-radius:12px;background:var(--paper-2);color:var(--ink)}
+.dlg .btn{align-self:flex-start}
+
+
+/* Transcriber states */
+.win-body{height:640px;min-height:0}
+.paper{min-height:0}
+.view{display:flex;flex-direction:column;flex:1;min-height:0}
+.view[hidden]{display:none}
+.tr{overflow-y:auto;min-height:0;scroll-behavior:smooth}
+.tr-hint{padding:10px 22px 14px;border-top:1px solid #D4D4E2;font-size:13px;color:var(--ink-soft)}
+.tx.editing{outline:2px solid #6C5CE0;outline-offset:3px;border-radius:6px;background:#fff;cursor:text}
+.bar-actions{display:flex;gap:8px;margin-left:auto}
+.bar-btn{all:unset;cursor:pointer;display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 14px;border-radius:999px;font:600 14px/1 var(--body);color:var(--text);background:rgba(236,235,250,.08);white-space:nowrap;transition:background-color .2s}
+.bar-btn:hover{background:rgba(236,235,250,.15)}
+.bar-btn:focus-visible{outline:3px solid var(--hl);outline-offset:2px}
+.bar-btn svg{width:14px;height:14px}
+.bar-new{background:var(--hl);color:var(--ink)}
+.bar-new:hover{background:var(--hl-2)}
+.bar-btn.is-on{color:var(--hl)}
+.bar-btn.is-on::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--hl)}
+.player video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#05061A;display:none}
+.player.has-video video{display:block}
+.player.has-video::before,.player.has-video .player-who{display:none}
+.win.drag{box-shadow:0 0 0 3px var(--hl),0 60px 120px -40px rgba(0,0,0,.75)}
+.notice{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 20px;margin:14px 22px 0;padding:14px 16px;border-radius:14px;background:#FFF6D6;box-shadow:inset 0 0 0 1px #F0D77A;font-size:15px;color:var(--ink)}
+.notice[hidden]{display:none}
+.notice-btns{display:flex;gap:8px;flex-wrap:wrap}
+.btn.small{min-height:42px;padding:0 18px;font-size:14px}
+.btn-line{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 1.5px rgba(22,24,58,.3)}
+.btn-line:hover{box-shadow:inset 0 0 0 1.5px var(--ink)}
+.pick{padding:22px;gap:18px;overflow-y:auto}
+.drop{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:260px;padding:28px;border-radius:18px;border:2px dashed #B9B8D3;background:#fff;text-align:center;cursor:pointer;transition:border-color .2s,background-color .2s}
+.drop:hover,.win.drag .drop{border-color:#6C5CE0;background:#F7F6FF}
+.drop:focus-within{outline:3px solid #6C5CE0;outline-offset:3px}
+.drop svg{width:52px;height:52px;color:#6C5CE0}
+.drop-title{font:700 clamp(19px,2vw,24px)/1.2 var(--display);letter-spacing:-0.02em}
+.drop-sub{font-size:14px;color:var(--ink-soft);margin-bottom:6px}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.field{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600;color:var(--ink)}
+.field[hidden]{display:none}
+.field select,.field input{width:100%;min-height:48px;padding:0 14px;border-radius:12px;border:0;background:#fff;box-shadow:inset 0 0 0 1px #C9C8DC;font:16px var(--body);color:var(--ink)}
+.field select:focus,.field input:focus{outline:none;box-shadow:inset 0 0 0 2px #6C5CE0}
+.pick-note{font-size:14px;color:var(--ink-soft)}
+.pick-err{font-size:15px;color:#B42318;font-weight:600}
+.pick-err:empty{display:none}
+.linkish{all:unset;cursor:pointer;align-self:flex-start;font-size:14px;font-weight:600;color:#4B3FC0;text-decoration:underline;text-underline-offset:3px}
+.linkish:focus-visible{outline:2px solid #6C5CE0;outline-offset:3px;border-radius:4px}
+.linkish[hidden]{display:none}
+.work{padding:28px 22px 22px;gap:14px}
+.work-title{font:700 clamp(20px,2.2vw,26px)/1.2 var(--display);letter-spacing:-0.02em}
+.work .bar{height:10px;border-radius:999px;background:#DDDCEA;overflow:hidden}
+.work .bar i{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,#6C5CE0,var(--hl));transition:width .3s}
+.work-meta{display:flex;justify-content:space-between;gap:16px;font-size:14px;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.live{list-style:none;margin:6px 0 0;padding:0;flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.live li{display:grid;grid-template-columns:62px 1fr;gap:14px;padding:10px 14px;border-radius:12px;background:#fff;font-size:16px;line-height:1.55;animation:rise .35s ease-out}
+.live .ts{font:500 13px/1.9 var(--mono);color:var(--ink-soft)}
+@keyframes rise{from{opacity:0;transform:translateY(6px)}}
+.work .btn{align-self:flex-start}
+.dlg .field input{box-shadow:inset 0 0 0 1px #B9B8D3}
+.msg{font-size:15px;min-height:1.4em}
+.msg.ok{color:#256B3A}.msg.bad{color:#B42318}
+.dlg-row{display:flex;flex-wrap:wrap;gap:10px}
+.dlg-row .btn[hidden]{display:none}
+@media (max-width:860px){
+  .win[data-view=vPick] .side,.win[data-view=vWork] .side{display:none}
+  .win-body{height:auto}
+  .tr{max-height:62vh}
+  .player.has-video{display:grid;aspect-ratio:16/9}
+  .bar-btn{min-height:38px;padding:0 12px;font-size:13px}
+  .bar-new{padding:0 12px}
+  .win-bar{gap:10px}
+}
+@media (max-width:560px){
+  .opts{grid-template-columns:1fr}
+  .win-file{display:none}
+  .bar-actions{margin-left:auto}
+  .drop{min-height:220px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{transition:none!important;animation:none!important}
+  .ticker{display:none}
+  html{scroll-behavior:auto}
+  .lic{transform:none}
+  .caption-text .cw{opacity:1}
+  .final-wave path{stroke-dashoffset:0}
+}
+</style>
+</head>
+<body>
+
+<header class="site-head" id="head">
+  <div class="head-in">
+    <a class="logo" href="#top" aria-label="InkWhisper home">
+      <svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#FFD24A"/><path d="M14 32h4M22 24v16M30 18v28M38 26v12M46 30v4" stroke="#16183A" stroke-width="4.5" stroke-linecap="round" fill="none"/></svg>
+      inkwhisper
+    </a>
+    <nav class="nav" aria-label="Main menu">
+      <a href="#demo">Demo</a>
+      <a href="#features">Features</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#price">Price</a>
+      <a href="#faq">Questions</a>
+    </nav>
+    <a class="btn btn-buy head-buy buy" data-short href="#price"><span class="buy-label">Buy</span></a>
+    <button class="menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="sheet" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 8h16M4 16h16"/></svg>
+    </button>
+  </div>
+  <div class="sheet" id="sheet">
+    <nav aria-label="Mobile menu">
+      <a href="#demo">Demo</a>
+      <a href="#features">Features</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#price">Price</a>
+      <a href="#faq">Questions</a>
+    </nav>
+    <a class="btn btn-buy buy" href="#price"><span class="buy-label">Buy</span></a>
+  </div>
+</header>
+
+<main>
+  <!-- 3D story: particles gather into a voice wave, then settle into lines of text while you scroll -->
+  <section class="story" id="top" aria-label="Introduction">
+    <div class="stage">
+      <canvas id="scene" aria-hidden="true"></canvas>
+      <div class="scrim" aria-hidden="true"></div>
+      <div class="wrap stage-copy">
+        <div class="copy-a" id="copyA">
+          <p class="status" id="status" hidden><i aria-hidden="true"></i><span></span></p>
+          <h1 class="hero-title">You talk.<br><span class="soft">InkWhisper</span> writes.</h1>
+          <p class="hero-sub">Turns recordings and videos into searchable text right here in your browser. Nothing is uploaded. No account, no subscription.</p>
+          <div class="hero-ctas">
+            <a class="btn btn-buy buy" href="#price"><span class="buy-label">Buy</span></a>
+            <a class="btn btn-ghost" href="#demo">
+              <svg viewBox="0 0 18 18" fill="currentColor" aria-hidden="true"><path d="M5 3.2v11.6a.8.8 0 0 0 1.2.7l9.3-5.8a.8.8 0 0 0 0-1.4L6.2 2.5A.8.8 0 0 0 5 3.2z"/></svg>
+              Try it free
+            </a>
+          </div>
+          <div class="caption" aria-hidden="true">
+            <span class="caption-rec"><i></i><span id="capClock">00:00</span></span>
+            <p class="caption-text" id="capText"></p>
+          </div>
+        </div>
+        <div class="copy-b" id="copyB">
+          <h2>Your voice becomes text.</h2>
+          <p>The Whisper speech model runs inside your browser. Your recording is never uploaded.</p>
+        </div>
+      </div>
+      <div class="hint" id="hint" aria-hidden="true"><span>Scroll</span><i></i></div>
+    </div>
+  </section>
+
+  <!-- The transcriber: runs in this browser -->
+  <section class="sec" id="demo">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Try it right here.</h2>
+        <p>Drop a recording or a video. It is transcribed inside this browser and never uploaded. Free for recordings up to 10 minutes.</p>
+      </div>
+      <div class="app-stage">
+        <div class="win" id="win">
+          <div class="win-bar">
+            <span class="logo"><svg viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#FFD24A"/><path d="M14 32h4M22 24v16M30 18v28M38 26v12M46 30v4" stroke="#16183A" stroke-width="4.5" stroke-linecap="round" fill="none"/></svg><span>inkwhisper</span></span>
+            <div class="win-file"><strong id="fileName">team-meeting.mp4</strong><span id="fileMeta">Sample, 00:48</span></div>
+            <div class="bar-actions">
+              <button class="bar-btn" type="button" id="keyBtn">Enter license key</button>
+              <button class="bar-btn bar-new" type="button" id="newBtn">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg>
+                New transcript
+              </button>
+            </div>
+          </div>
+          <div class="win-body">
+            <div class="side">
+              <div class="player" id="player">
+                <div class="player-who" aria-hidden="true"><b style="height:62%"></b><b style="height:88%"></b><b style="height:70%"></b></div>
+                <video id="vid" playsinline preload="metadata"></video>
+              </div>
+              <audio id="aud" preload="metadata"></audio>
+              <div class="side-top">
+                <button class="play" id="play" type="button" aria-label="Pause">
+                  <svg id="icoPause" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true"><rect x="3" y="2" width="4" height="14" rx="1.2"/><rect x="11" y="2" width="4" height="14" rx="1.2"/></svg>
+                  <svg id="icoPlay" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true" style="display:none"><path d="M4 2.5v13a1 1 0 0 0 1.5.86l11-6.5a1 1 0 0 0 0-1.72l-11-6.5A1 1 0 0 0 4 2.5z"/></svg>
+                </button>
+                <div class="wave">
+                  <canvas id="waveCanvas" aria-hidden="true"></canvas>
+                  <label class="vh" for="seek">Position in the recording</label>
+                  <input id="seek" type="range" min="0" max="48" step="0.1" value="0">
+                </div>
+              </div>
+              <div class="wave-meta"><span id="clock">00:00</span><span id="durLabel">00:48</span></div>
+              <div>
+                <p class="side-label">Copy</p>
+                <div class="chips">
+                  <button class="chip" type="button" data-copy="txt" id="copyTxt">TXT</button>
+                  <button class="chip" type="button" data-copy="srt" id="copySrt">SRT</button>
+                  <button class="chip" type="button" data-copy="vtt">VTT</button>
+                </div>
+              </div>
+              <div>
+                <p class="side-label">Download</p>
+                <div class="chips">
+                  <button class="chip" type="button" data-dl="txt">TXT</button>
+                  <button class="chip" type="button" data-dl="srt">SRT</button>
+                  <button class="chip" type="button" data-dl="vtt">VTT</button>
+                </div>
+              </div>
+              <span class="copied" id="copied" aria-live="polite"></span>
+              <textarea class="copy-box" id="copyBox" readonly aria-label="Text to copy"></textarea>
+            </div>
+            <div class="paper">
+              <!-- Result -->
+              <div class="view" id="vResult">
+                <div class="tools">
+                  <div class="search">
+                    <svg viewBox="0 0 18 18" fill="none" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="8" cy="8" r="5.5"/><path d="M12.2 12.2L16 16"/></svg>
+                    <label class="vh" for="q">Search the transcript</label>
+                    <input id="q" type="search" autocomplete="off" placeholder="Search the transcript">
+                    <span class="count" id="count" aria-live="polite"></span>
+                  </div>
+                  <span class="pill" id="modePill">Sample</span>
+                </div>
+                <div class="notice" id="limitNote" hidden>
+                  <p><strong>Free version:</strong> only the first 10 minutes were transcribed. A license unlocks recordings of any length.</p>
+                  <div class="notice-btns">
+                    <a class="btn btn-buy buy small" data-short href="#price"><span class="buy-label">Buy</span></a>
+                    <button class="btn btn-line small" type="button" id="limitKey">Enter license key</button>
+                  </div>
+                </div>
+                <ol class="tr" id="tr"></ol>
+                <p class="tr-hint">Click a line to jump there. Double-click it to fix a word.</p>
+              </div>
+              <!-- Pick a file -->
+              <div class="view pick" id="vPick" hidden>
+                <label class="drop" id="drop" for="fileIn">
+                  <svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 24h4M16 16v16M24 10v28M32 18v12M40 22v4"/></svg>
+                  <span class="drop-title">Drop a recording or video here</span>
+                  <span class="drop-sub">MP3, WAV, M4A, OGG, MP4, WebM and more</span>
+                  <span class="btn btn-ink">Choose a file</span>
+                  <input id="fileIn" class="vh" type="file" accept="audio/*,video/*,.mp3,.wav,.m4a,.aac,.ogg,.opus,.flac,.webm,.mp4,.mov,.m4v,.mkv">
+                </label>
+                <div class="opts">
+                  <label class="field"><span>Language</span>
+                    <select id="langSel"><option value="">Detect automatically</option></select>
+                  </label>
+                  <label class="field"><span>Quality</span>
+                    <select id="modelSel">
+                      <option value="fast">Fast (smaller download)</option>
+                      <option value="accurate">Accurate (bigger download, slower)</option>
+                    </select>
+                  </label>
+                </div>
+                <p class="pick-note" id="pickNote">The first time, the speech model downloads once and is saved in your browser.</p>
+                <p class="pick-err" id="pickErr" role="alert"></p>
+                <button class="linkish" type="button" id="pickBack">Back to the transcript</button>
+              </div>
+              <!-- Working -->
+              <div class="view work" id="vWork" hidden>
+                <p class="work-title" id="workTitle">Reading the file</p>
+                <div class="bar" aria-hidden="true"><i id="workBar"></i></div>
+                <div class="work-meta"><span id="workPct">0 %</span><span id="workDetail"></span></div>
+                <ol class="live" id="live" aria-live="polite"></ol>
+                <button class="btn btn-line small" type="button" id="cancelBtn">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="demo-note">Works best in Chrome or Edge on a computer, where it can use your graphics card. Your file never leaves your device.</p>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="sec" id="features" style="padding-top:40px">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>Made for people who record a lot.</h2>
+        <p>Interviews, lectures, meetings, podcasts and voice notes. Drop the file in and get text you can actually use.</p>
+      </div>
+      <div class="bento" id="bento">
+        <article class="tile t-a">
+          <h3>Every word, on time</h3>
+          <p>Each word gets its own timestamp. Click one and the recording jumps right there.</p>
+          <div class="demo"><p class="karaoke" id="karaoke" aria-hidden="true"></p></div>
+        </article>
+        <article class="tile t-b">
+          <h3>99 languages</h3>
+          <p>Detects the language on its own, or you pick it.</p>
+          <div class="demo" aria-hidden="true">
+            <div class="lang"><div class="lang-track" id="langTrack"></div></div>
+            <div class="lang-foot"><span id="langNum">1 / 99</span></div>
+            <div class="ticker"><div class="ticker-in" id="ticker"></div></div>
+          </div>
+        </article>
+        <article class="tile t-c">
+          <h3>Nothing is uploaded</h3>
+          <p>The speech model runs inside your browser. Once it starts, you can even turn off the internet.</p>
+          <div class="demo offline" id="offline" aria-hidden="true">
+            <div class="toggle"><span class="switch"></span><span>Airplane mode</span></div>
+            <div class="mini-bar"><i id="offBar"></i></div>
+            <span class="off-note" id="offNote">Transcribing 0 %</span>
+          </div>
+        </article>
+        <article class="tile t-d">
+          <h3>Search without accents</h3>
+          <p>Type it the lazy way. InkWhisper still finds it.</p>
+          <div class="demo" aria-hidden="true">
+            <div class="fake-search"><svg viewBox="0 0 18 18" fill="none" stroke-width="1.8" stroke-linecap="round"><circle cx="8" cy="8" r="5.5"/><path d="M12.2 12.2L16 16"/></svg><span id="fsText"></span><span class="caret"></span></div>
+            <p class="found" id="fsFound">Meet me in <mark>Zürich</mark> at noon.</p>
+          </div>
+        </article>
+        <article class="tile t-e">
+          <h3>Subtitles in one click</h3>
+          <p>Export SRT or VTT for YouTube, Premiere or DaVinci. Or plain text.</p>
+          <div class="demo"><pre class="srt" id="srt" aria-hidden="true"></pre></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="sec" id="how" style="padding-top:40px">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>From recording to text in three steps.</h2>
+      </div>
+      <ol class="steps" id="steps">
+        <li class="step"><span class="step-dot">1</span><h3>Drop a file in</h3><p>A recording, a video or a voice message. MP3, WAV, M4A, OGG, MP4, WebM and more.</p><span class="tag">Drag and drop</span></li>
+        <li class="step"><span class="step-dot">2</span><h3>InkWhisper listens</h3><p>The first time, the speech model downloads once and is saved in your browser. Then the sentences appear as they are transcribed.</p><span class="tag">Live preview</span></li>
+        <li class="step"><span class="step-dot">3</span><h3>Use the text</h3><p>Search it, fix a word, then export as TXT, SRT or VTT.</p><span class="tag">TXT, SRT, VTT</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- Privacy -->
+  <section class="sec" id="privacy" style="padding-top:40px">
+    <div class="wrap">
+      <div class="priv">
+        <div class="sec-head" style="margin-bottom:44px">
+          <h2>Your recording stays where it was made.</h2>
+          <p>Meetings, client calls and consultations often can’t go to someone else’s cloud. InkWhisper transcribes them inside your browser and never sends them anywhere.</p>
+        </div>
+        <div class="paths">
+          <div class="path cloud">
+            <span class="path-name">Typical online service</span>
+            <div class="flow">
+              <span class="node">Recording</span><span class="link" aria-hidden="true"></span>
+              <span class="node risk">Internet</span><span class="link" aria-hidden="true"></span>
+              <span class="node risk">Someone else’s server</span><span class="link" aria-hidden="true"></span>
+              <span class="node">Text</span>
+            </div>
+          </div>
+          <div class="path local">
+            <span class="path-name">InkWhisper</span>
+            <div class="flow">
+              <span class="node">Recording</span><span class="link" aria-hidden="true"></span>
+              <span class="node pc"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><rect x="2.5" y="3.5" width="15" height="10" rx="1.5"/><path d="M7 17h6M10 13.5V17"/></svg>Your browser</span><span class="link" aria-hidden="true"></span>
+              <span class="node">Text</span>
+            </div>
+          </div>
+        </div>
+        <ul class="facts">
+          <li><strong>Processed in your browser</strong><span>Audio and video are never sent to a server.</span></li>
+          <li><strong>Nothing to install</strong><span>Open the page and drop a file in. Works on Windows, Mac and Linux.</span></li>
+          <li><strong>No account</strong><span>Try it free. Pay once, paste your license key and keep going.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing -->
+  <section class="sec" id="price" style="padding-top:40px">
+    <div class="wrap price-grid">
+      <div class="price-copy">
+        
+        <h2 style="font-size:clamp(36px,4.6vw,64px);line-height:1.02;letter-spacing:-0.035em">Pay once. Keep using it.</h2>
+        <p style="color:var(--muted);font-size:18px;margin-top:18px">Free for recordings up to 10 minutes. One payment unlocks any length. No monthly fees and no per-minute credits.</p>
+        <ul class="inc" id="inc"></ul>
+        <div class="pay">
+          <h3>How payment works</h3>
+          <ol>
+            <li>Click Buy and a secure Polar checkout opens.</li>
+            <li>Pay by card. Polar handles the VAT for your country.</li>
+            <li>Your license key arrives by email right away. Paste it into InkWhisper on this page.</li>
+          </ol>
+        </div>
+      </div>
+      <div class="price-card card-wrap" id="cardWrap">
+        <div class="lic" id="lic">
+          <div class="lic-top"><span class="logo">inkwhisper</span><span class="lic-chip" aria-hidden="true"></span></div>
+          <p class="lic-price" id="priceTag">21.99 €</p>
+          <p class="lic-note" id="priceNote"></p>
+          <p class="lic-key" aria-hidden="true">XXXX-XXXX-XXXX-XXXX</p>
+          <a class="btn btn-buy buy" href="#price"><span class="buy-label">Buy</span></a>
+          <p class="lic-secure"><svg viewBox="0 0 16 16" fill="none" stroke-width="1.6" aria-hidden="true"><rect x="3" y="7" width="10" height="7" rx="1.5"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>Secure payment via Polar</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="sec" id="faq" style="padding-top:40px">
+    <div class="wrap faq-grid">
+      <div class="faq-side">
+        <h2>Questions</h2>
+        <p>Something else? Write to <span class="cfg-email"></span>.</p>
+      </div>
+      <div class="faq">
+        <details><summary>Which languages does it understand?<span class="plus" aria-hidden="true"></span></summary><p>Whisper supports 99 languages, including English, Spanish, German and French. Accuracy depends on the language and the recording quality. We will publish test results before launch.</p><p class="lang-list">All 99: <span id="langList"></span>.</p></details>
+        <details><summary>Do I need a powerful computer?<span class="plus" aria-hidden="true"></span></summary><p>No. A recent computer is enough. In Chrome and Edge InkWhisper uses your graphics card, which is much faster. Phones work too, but long recordings are slow.</p></details>
+        <details><summary>How long can a recording be?<span class="plus" aria-hidden="true"></span></summary><p>Free: up to 10 minutes per recording. With a license there is no limit. Very long recordings simply take longer.</p></details>
+        <details><summary>Can it tell who is speaking?<span class="plus" aria-hidden="true"></span></summary><p>The first version does not separate speakers. The transcript contains the text and timestamps.</p></details>
+        <details><summary>How many devices can I use it on?<span class="plus" aria-hidden="true"></span></summary><p>The license is for one person in <span class="cfg-devices"></span>. To move it, open the license window, remove it from the old browser and enter the key in the new one.</p></details>
+        <details><summary>What if it doesn’t work for me?<span class="plus" aria-hidden="true"></span></summary><p>You get your money back within <span class="cfg-refund"></span> days of purchase. Just write to <span class="cfg-email"></span>.</p></details>
+        <details><summary>Is this an OpenAI product?<span class="plus" aria-hidden="true"></span></summary><p>No. InkWhisper is an independent product. It uses Whisper, an open speech recognition model that OpenAI released under the MIT license.</p></details>
+        <details><summary>Does it work on a Mac or a phone?<span class="plus" aria-hidden="true"></span></summary><p>Yes. It runs in a modern browser on Windows, Mac and Linux. Phones work too, but slowly.</p></details>
+        <details><summary>Is my recording really not uploaded?<span class="plus" aria-hidden="true"></span></summary><p>Yes. Your browser downloads the speech model once, then does all the work on your device. The file you drop in never leaves it. Only the license check talks to a server, and it sends just your key.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final call -->
+  <section class="sec" style="padding-top:20px;padding-bottom:40px">
+    <div class="wrap">
+      <div class="final" id="final">
+        <svg class="final-wave" viewBox="0 0 620 220" aria-hidden="true"><path d="M0 120 C 40 120 40 60 80 60 S 120 180 160 180 S 200 30 240 30 S 280 200 320 200 S 360 80 400 80 S 440 150 480 150 S 520 110 560 110 S 600 120 640 120"/></svg>
+        <h2>Stop retyping what was said.</h2>
+        <p>Drop in a recording and get the words back in minutes, right in your browser.</p>
+        <div class="hero-ctas">
+          <a class="btn btn-buy buy" href="#price"><span class="buy-label">Buy</span></a>
+          <a class="btn btn-ghost" href="#demo">Try it free</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p class="foot-mark" aria-hidden="true">inkwhisper</p>
+    <div class="foot-row">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span>© <span id="year">2026</span> <span class="cfg-seller"></span></span>
+        <span>Payments and VAT are handled by Polar as the Merchant of Record.</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <span>Contact: <span class="cfg-email"></span></span>
+        <div class="foot-links" id="footLinks"></div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<dialog id="demoDlg" aria-labelledby="demoDlgT">
+  <div class="dlg">
+    <h2 id="demoDlgT">Payments aren’t switched on yet</h2>
+    <p>This page runs in demo mode. Once switched on, a Polar checkout opens here. After paying, the customer gets a license key by email and pastes it into InkWhisper on this page.</p>
+    <p class="small">For the site owner: fill in checkoutUrl and polarOrganizationId in CONFIG inside index.html.</p>
+    <button class="btn btn-ink" type="button" data-close>Got it</button>
+  </div>
+</dialog>
+
+<dialog id="thxDlg" aria-labelledby="thxDlgT">
+  <div class="dlg">
+    <h2 id="thxDlgT">Thanks for your purchase!</h2>
+    <ol>
+      <li>Open the email from Polar and copy your license key.</li>
+      <li>Click “Enter license key” in InkWhisper on this page.</li>
+      <li>Paste the key. Recordings of any length are now unlocked in this browser.</li>
+    </ol>
+    <p id="thxPortal"></p>
+    <button class="btn btn-ink" type="button" data-close>Close</button>
+  </div>
+</dialog>
+
+<dialog id="keyDlg" aria-labelledby="keyDlgT">
+  <form class="dlg" id="keyForm" novalidate>
+    <h2 id="keyDlgT">License key</h2>
+    <p id="keyIntro"></p>
+    <label class="field" id="keyField"><span>License key</span><input id="keyIn" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="INKW-…"></label>
+    <p class="msg" id="keyMsg" aria-live="polite"></p>
+    <div class="dlg-row">
+      <button class="btn btn-ink" type="submit" id="keyGo">Activate</button>
+      <button class="btn btn-line" type="button" data-close>Close</button>
+    </div>
+    <button class="linkish" type="button" id="keyRemove" hidden>Remove from this browser</button>
+  </form>
+</dialog>
+
+<script type="text/worker" id="workerSrc">
+/* InkWhisper transcriber. Runs Whisper inside the browser, in a worker. */
+import { pipeline, env, Tensor } from '__TJS__';
+env.allowLocalModels = false;
+const SR = 16000;
+let asr = null, current = null, device = 'wasm';
+
+async function canCache(){ try { if (typeof caches === 'undefined') return false; await caches.open('inkwhisper-test'); return true; } catch (e) { return false; } }
+async function pickDevice(){
+  try { if (self.navigator && navigator.gpu) { const a = await navigator.gpu.requestAdapter(); if (a) return 'webgpu'; } } catch (e) {}
+  return 'wasm';
+}
+async function load(model){
+  if (asr && current === model) return;
+  if (asr) { try { await asr.dispose(); } catch (e) {} asr = null; }
+  env.useBrowserCache = await canCache();
+  const files = {};
+  const progress_callback = p => {
+    if (p.status === 'progress' && p.total) {
+      files[p.file] = [p.loaded, p.total];
+      let l = 0, t = 0; for (const k in files) { l += files[k][0]; t += files[k][1]; }
+      postMessage({ type: 'dl', loaded: l, total: t });
+    }
+  };
+  device = await pickDevice();
+  const opts = d => ({ device: d, progress_callback, dtype: d === 'webgpu' ? { encoder_model: 'fp32', decoder_model_merged: 'q4' } : { encoder_model: 'q8', decoder_model_merged: 'q8' } });
+  try { asr = await pipeline('automatic-speech-recognition', model, opts(device)); }
+  catch (e) {
+    if (device !== 'webgpu') throw e;
+    device = 'wasm';
+    asr = await pipeline('automatic-speech-recognition', model, opts('wasm'));
+  }
+  current = model;
+}
+
+/* Cut the audio into pieces of at most 30 s, at the quietest moment near the end. */
+function cut(a){
+  const W = Math.floor(SR * 0.1), out = [];
+  let g = 0, gn = 0; for (let k = 0; k < a.length; k += 16) { g += a[k] * a[k]; gn++; }
+  const floor = Math.max(0.0008, Math.sqrt(g / Math.max(1, gn)) * 0.06);
+  let s = 0;
+  while (s < a.length) {
+    let e = Math.min(a.length, s + SR * 30);
+    if (e < a.length) {
+      let best = e, bv = Infinity;
+      for (let x = s + SR * 20; x + W <= e; x += W) {
+        let sum = 0; for (let k = x; k < x + W; k += 4) sum += a[k] * a[k];
+        if (sum < bv) { bv = sum; best = x + (W >> 1); }
+      }
+      e = best;
+    }
+    let sum = 0, n = 0; for (let k = s; k < e; k += 8) { sum += a[k] * a[k]; n++; }
+    out.push({ s, e, silent: Math.sqrt(sum / Math.max(1, n)) < floor || e - s < SR * 0.3 });
+    s = e;
+  }
+  return out;
+}
+
+/* Whisper picks the language from the first token it would write. */
+async function detect(audio){
+  const model = asr.model, gc = model.generation_config;
+  const { input_features } = await asr.processor(audio);
+  const ids = new Tensor('int64', BigInt64Array.from([BigInt(gc.decoder_start_token_id)]), [1, 1]);
+  const out = await model({ input_features, decoder_input_ids: ids });
+  const L = out.logits, V = L.dims.at(-1), off = (L.dims.at(-2) - 1) * V, data = L.data;
+  let best = 'en', bv = -Infinity;
+  for (const [tok, id] of Object.entries(gc.lang_to_id || {})) {
+    const v = Number(data[off + id]);
+    if (v > bv) { bv = v; best = tok.slice(2, -2); }
+  }
+  return best;
+}
+
+onmessage = async ({ data }) => {
+  if (data.type !== 'run') return;
+  try {
+    await load(data.model);
+    postMessage({ type: 'ready', device });
+    const a = data.audio, pieces = cut(a);
+    let lang = data.language;
+    if (!lang) {
+      postMessage({ type: 'phase', phase: 'detect' });
+      const v = pieces.find(p => !p.silent);
+      try { lang = v ? await detect(a.subarray(v.s, v.e)) : 'en'; } catch (e) { lang = 'en'; postMessage({ type: 'warn', message: 'detect: ' + (e && e.message || e) }); }
+    }
+    postMessage({ type: 'lang', lang });
+    for (const p of pieces) {
+      if (p.silent) { postMessage({ type: 'part', segs: [], done: p.e }); continue; }
+      const len = (p.e - p.s) / SR, off = p.s / SR;
+      const out = await asr(a.subarray(p.s, p.e), { language: lang, task: 'transcribe', return_timestamps: true });
+      const chunks = out.chunks && out.chunks.length ? out.chunks : [{ timestamp: [0, len], text: out.text || '' }];
+      const segs = chunks.map(c => {
+        const st = Math.max(0, Math.min(len, c.timestamp && c.timestamp[0] != null ? c.timestamp[0] : 0));
+        const en = Math.max(st, Math.min(len, c.timestamp && c.timestamp[1] != null ? c.timestamp[1] : len));
+        return { start: off + st, end: off + en, text: String(c.text || '').trim() };
+      }).filter(s => s.text);
+      postMessage({ type: 'part', segs, done: p.e });
+    }
+    postMessage({ type: 'done', lang });
+  } catch (e) {
+    postMessage({ type: 'error', message: String(e && e.message || e) });
+  }
+};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.27/dist/lenis.min.js"></script>
+<script>
+/* =====================================================================
+   CONFIG: the only block you need to edit before launch.
+   ===================================================================== */
+const CONFIG = {
+  price: '21.99 €',         // must match the price in Polar
+  vatIncluded: false,       // Polar adds VAT at checkout by default
+  checkoutUrl: 'https://buy.polar.sh/polar_cl_H66GfDWBARfUUGSn5xKkRvcMxyfglUqUDotzY0EwXtu',          // Polar checkout link, e.g. 'https://buy.polar.sh/polar_cl_...'; empty = demo mode
+  polarOrganizationId: 'ac45c545-07b8-434f-8965-6aa22e6fb6a7',  // Polar > Settings > General > Organization ID; turns on license keys
+  embedCheckout: false,     // true = checkout opens as a popup on this page; first add your domain in Polar > Settings > Embedding
+  polarSandbox: false,      // true while testing with sandbox.polar.sh (test card 4242 4242 4242 4242)
+  launchDate: '',           // e.g. 'March 2027'; shown only in demo mode
+  devices: 2,               // activation limit you set in Polar (License Keys benefit) = browsers per key
+  refundDays: 14,
+  sellerName: '',           // your name or company
+  email: '',                // contact email
+  termsUrl: 'terms.html',   // terms of sale (fill in the LEGAL block inside terms.html)
+  privacyUrl: 'privacy.html', // privacy policy (fill in the LEGAL block inside privacy.html)
+  portalUrl: ''             // Polar customer portal, e.g. 'https://polar.sh/your-org/portal'
+};
+const POLAR_EMBED = 'https://cdn.jsdelivr.net/npm/@polar-sh/checkout@0.6.0/dist/embed.global.js';
+
+const SEGS = [
+  [0,'Okay, let’s start with the budget for next quarter.'],
+  [7,'I sent the draft on Monday, the numbers are in the sheet.'],
+  [15,'Great. Then we only need to confirm marketing and the launch date.'],
+  [24,'I’d move the launch by a week, because of testing.'],
+  [32,'Agreed. Testing matters more than speed.'],
+  [40,'Then I’ll write it down and send everyone a summary.']
+];
+const DUR = 48;
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const clamp = (v,a,b) => Math.min(b,Math.max(a,v));
+const smoother = (a,b,v) => { const t = clamp((v-a)/(b-a),0,1); return t*t*t*(t*(t*6-15)+10); };
+const mmss = s => { s = Math.max(0,Math.floor(s)); return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); };
+const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^\p{L}\p{N}]/gu,'');
+
+/* ---------- Config-driven content ---------- */
+const live = !!CONFIG.checkoutUrl;
+const pcs = n => n === 1 ? '1 browser' : n+' browsers';
+function renderConfig(){
+  $$('.buy').forEach(a => { a.querySelector('.buy-label').textContent = a.hasAttribute('data-short') ? 'Buy' : 'Buy for '+CONFIG.price; });
+  $('#priceTag').textContent = CONFIG.price;
+  $('#priceNote').textContent = CONFIG.vatIncluded ? 'One-time payment. VAT included.' : 'One-time payment. VAT is added at checkout based on your country.';
+  const st = $('#status'); st.hidden = live; st.querySelector('span').textContent = 'In development. Launch: '+(CONFIG.launchDate || 'soon');
+  const inc = $('#inc'); inc.textContent = '';
+  ['Recordings of any length','License for 1 person in '+pcs(CONFIG.devices),'Money back within '+CONFIG.refundDays+' days','License key by email right after payment'].forEach(t => {
+    const li = document.createElement('li');
+    li.innerHTML = '<svg viewBox="0 0 22 22" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 11.5l4.2 4.2L17.5 6.5"/></svg>';
+    const sp = document.createElement('span'); sp.textContent = t; li.appendChild(sp); inc.appendChild(li);
+  });
+  $$('.cfg-devices').forEach(e => e.textContent = pcs(CONFIG.devices));
+  $$('.cfg-refund').forEach(e => e.textContent = CONFIG.refundDays);
+  $$('.cfg-seller').forEach(e => e.textContent = CONFIG.sellerName || '[your name]');
+  $$('.cfg-email').forEach(e => {
+    e.textContent = '';
+    if (CONFIG.email) { const a = document.createElement('a'); a.href = 'mailto:'+CONFIG.email; a.textContent = CONFIG.email; e.appendChild(a); }
+    else e.textContent = '[your email]';
+  });
+  const fl = $('#footLinks'); fl.textContent = '';
+  [[CONFIG.termsUrl,'Terms of sale'],[CONFIG.privacyUrl,'Privacy policy']].forEach(([u,t]) => {
+    if (u) { const a = document.createElement('a'); a.href = u; a.textContent = t; fl.appendChild(a); }
+    else { const s = document.createElement('span'); s.textContent = t+' (to add)'; fl.appendChild(s); }
+  });
+  if (CONFIG.portalUrl) {
+    const tp = $('#thxPortal'); tp.append('You can also find the key and files in the ');
+    const a = document.createElement('a'); a.href = CONFIG.portalUrl; a.textContent = 'Polar customer portal'; tp.append(a, '.');
+  }
+  $('#year').textContent = new Date().getFullYear();
+}
+
+/* ---------- Checkout (Polar) ---------- */
+function setupCheckout(){
+  $$('.buy').forEach(a => {
+    if (live) {
+      // Opens Polar's own checkout page. After paying, Polar sends the customer back to the success URL (#thanks).
+      a.href = CONFIG.checkoutUrl;
+      a.rel = 'noopener';
+    } else {
+      a.addEventListener('click', e => { e.preventDefault(); closeMenu(); openDlg('#demoDlg', a); });
+    }
+  });
+  if (live && CONFIG.embedCheckout) {
+    $$('.buy').forEach(a => { a.setAttribute('data-polar-checkout',''); a.setAttribute('data-polar-checkout-theme','dark'); });
+    const s = document.createElement('script');
+    s.src = POLAR_EMBED; s.defer = true;
+    s.onload = () => { try { window.Polar && window.Polar.EmbedCheckout && window.Polar.EmbedCheckout.init(); } catch(e){} };
+    document.head.appendChild(s);
+  }
+}
+
+/* ---------- Dialogs ---------- */
+let lastFocus = null;
+function openDlg(sel, from){
+  const d = $(sel); lastFocus = from || document.activeElement;
+  try { d.showModal(); } catch(e){ d.setAttribute('open',''); }
+  if (window.__lenis) window.__lenis.stop();
+  const b = d.querySelector('[data-close]'); b && b.focus();
+}
+function closeDlg(d){
+  try { d.close(); } catch(e){ d.removeAttribute('open'); }
+  if (window.__lenis) window.__lenis.start();
+  if (d.id === 'thxDlg' && location.hash === '#thanks') { try { location.hash = 'top'; } catch(e){} }
+  lastFocus && lastFocus.focus && lastFocus.focus();
+}
+$$('dialog').forEach(d => {
+  d.querySelector('[data-close]').addEventListener('click', () => closeDlg(d));
+  d.addEventListener('click', e => { if (e.target === d) closeDlg(d); });
+  d.addEventListener('cancel', e => { e.preventDefault(); closeDlg(d); });
+});
+function checkThanks(){ if (location.hash === '#thanks') openDlg('#thxDlg'); }
+addEventListener('hashchange', checkThanks);
+
+/* ---------- Mobile menu ---------- */
+const menuBtn = $('#menuBtn'), sheet = $('#sheet');
+function closeMenu(){ sheet.classList.remove('open'); menuBtn.setAttribute('aria-expanded','false'); menuBtn.setAttribute('aria-label','Open menu'); }
+menuBtn.addEventListener('click', () => {
+  const open = !sheet.classList.contains('open');
+  sheet.classList.toggle('open', open);
+  menuBtn.setAttribute('aria-expanded', String(open));
+  menuBtn.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+});
+$$('#sheet nav a').forEach(a => a.addEventListener('click', closeMenu));
+
+/* ---------- Hero live caption ---------- */
+const CAPS = [
+  'So the plan is to ship the first version in March.',
+  'Can you send me the recording from yesterday?',
+  'Every word you say becomes searchable text.'
+];
+const cap = { i: 0, w: 0, t: 0, words: [], hold: 0, clock: 0 };
+function capBuild(){
+  const el = $('#capText'); el.textContent = ''; cap.words = [];
+  CAPS[cap.i].split(' ').forEach((w, j, arr) => {
+    const s = document.createElement('span'); s.className = 'cw'; s.textContent = w;
+    el.appendChild(s); if (j < arr.length - 1) el.appendChild(document.createTextNode(' '));
+    cap.words.push(s);
+  });
+  cap.w = 0; cap.t = 0; cap.hold = 0;
+}
+function capTick(dt){
+  if (reduce || !cap.words.length) return;
+  cap.clock += dt; $('#capClock').textContent = mmss(cap.clock);
+  if (cap.w < cap.words.length) {
+    cap.t += dt;
+    if (cap.t > .32) {
+      cap.t = 0;
+      cap.words.forEach(s => s.classList.remove('now'));
+      cap.words[cap.w].classList.add('in','now'); cap.w++;
+    }
+  } else {
+    cap.hold += dt;
+    if (cap.hold > .5) cap.words.forEach(s => s.classList.remove('now'));
+    if (cap.hold > 2.6) { cap.i = (cap.i + 1) % CAPS.length; capBuild(); }
+  }
+}
+
+/* ---------- The transcriber (runs in this browser) ---------- */
+const TJS = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.2/dist/transformers.min.js';
+const MODELS = { fast: 'onnx-community/whisper-base', accurate: 'onnx-community/whisper-small' };
+const FREE_SECONDS = 600;          // free version: recordings up to 10 minutes
+const SR = 16000;
+const LANG_CODES = 'en zh de es ru ko fr ja pt tr pl ca nl ar sv it id hi fi vi he uk el ms cs ro da hu ta no th ur hr bg lt la mi ml cy sk te fa lv bn sr az sl kn et mk br eu is hy ne mn bs kk sq sw gl mr pa si km sn yo so af oc ka be tg sd gu am yi lo uz fo ht ps tk nn mt sa lb my bo tl mg as tt haw ln ha ba jw su'.split(' ');
+const langName = c => { const i = LANG_CODES.indexOf(c); return i >= 0 ? LANGS[i][1] : (c || 'Unknown'); };
+
+const S = { mode: 'sample', segs: [], dur: DUR, bars: null, media: null, url: null, name: 'team-meeting.mp4', meta: 'Sample, 00:48', limited: false };
+const sampleSegs = SEGS.map(([s, text], i) => ({ start: s, end: i < SEGS.length - 1 ? SEGS[i + 1][0] : DUR, text }));
+let t = 0, playing = !reduce, seen = false, words = [], segEls = [], lastWord = -2, editing = false;
+
+function show(view){ ['vResult', 'vPick', 'vWork'].forEach(id => { $('#' + id).hidden = id !== view; }); $('#win').dataset.view = view; }
+function setFileInfo(){
+  $('#fileName').textContent = S.name; $('#fileMeta').textContent = S.meta;
+  $('#durLabel').textContent = mmss(S.dur); $('#seek').max = S.dur.toFixed(1);
+  $('#modePill').textContent = S.mode === 'sample' ? 'Sample' : 'Your file';
+  $('#limitNote').hidden = !S.limited;
+}
+
+function buildTranscript(){
+  const tr = $('#tr'); tr.textContent = ''; words = []; segEls = []; lastWord = -2;
+  S.segs.forEach((sg, i) => {
+    const li = document.createElement('li');
+    const row = document.createElement('div');
+    row.className = 'seg'; row.tabIndex = 0; row.setAttribute('role', 'button');
+    const ts = document.createElement('span'); ts.className = 'ts'; ts.textContent = mmss(sg.start);
+    const tx = document.createElement('span'); tx.className = 'tx';
+    const parts = sg.text.split(/\s+/).filter(Boolean);
+    const total = parts.reduce((a, w) => a + w.length + 1, 0) || 1; let acc = 0;
+    parts.forEach((w, j) => {
+      const sp = document.createElement('span'); sp.className = 'w'; sp.textContent = w;
+      tx.appendChild(sp); if (j < parts.length - 1) tx.appendChild(document.createTextNode(' '));
+      words.push({ el: sp, seg: i, at: sg.start + (sg.end - sg.start) * (acc / total), key: norm(w) });
+      acc += w.length + 1;
+    });
+    row.append(ts, tx);
+    row.addEventListener('click', () => { if (!editing) seekTo(sg.start + 0.01); });
+    row.addEventListener('keydown', e => { if (!editing && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); seekTo(sg.start + 0.01); } });
+    row.addEventListener('dblclick', () => editSeg(i, tx));
+    li.appendChild(row); tr.appendChild(li);
+    segEls.push({ el: row, start: sg.start, end: sg.end });
+  });
+  applySearch(); drawTranscript(true);
+}
+function editSeg(i, tx){
+  if (editing) return;
+  editing = true; tx.textContent = S.segs[i].text; tx.contentEditable = 'true'; tx.classList.add('editing'); tx.focus();
+  const r = document.createRange(); r.selectNodeContents(tx); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+  const done = save => {
+    tx.removeEventListener('blur', onBlur); tx.removeEventListener('keydown', onKey);
+    const v = tx.textContent.replace(/\s+/g, ' ').trim();
+    if (save && v) S.segs[i].text = v;
+    editing = false; buildTranscript();
+  };
+  const onBlur = () => done(true);
+  const onKey = e => { if (e.key === 'Enter') { e.preventDefault(); done(true); } else if (e.key === 'Escape') { e.preventDefault(); done(false); } };
+  tx.addEventListener('blur', onBlur); tx.addEventListener('keydown', onKey);
+}
+const curTime = () => S.mode === 'real' && S.media ? (S.media.currentTime || 0) : t;
+function seekTo(x){
+  x = clamp(x, 0, S.dur);
+  if (S.mode === 'real' && S.media) { try { S.media.currentTime = x; } catch (e) {} }
+  t = x; drawTranscript(true);
+}
+function drawTranscript(force){
+  t = curTime();
+  let wi = -1;
+  for (let i = 0; i < words.length; i++) if (words[i].at <= t) wi = i;
+  drawWave();
+  if (!force && wi === lastWord) { syncClock(); return; }
+  lastWord = wi;
+  const seg = wi >= 0 ? words[wi].seg : 0;
+  segEls.forEach((s, i) => s.el.classList.toggle('on', i === seg));
+  words.forEach((w, i) => { w.el.classList.toggle('now', i === wi); w.el.classList.toggle('later', w.seg === seg && i > wi); });
+  if (S.mode === 'real' && isPlaying() && segEls[seg]) {
+    const box = $('#tr'), el = segEls[seg].el, br = box.getBoundingClientRect(), er = el.getBoundingClientRect();
+    if (er.top < br.top + 60 || er.bottom > br.bottom - 20) box.scrollTop += er.top - br.top - 80;
+  }
+  syncClock();
+}
+function syncClock(){
+  $('#clock').textContent = mmss(t);
+  const s = $('#seek'); if (document.activeElement !== s) s.value = t.toFixed(1);
+}
+function applySearch(){
+  const q = norm($('#q').value);
+  let n = 0; const hit = new Set();
+  words.forEach(w => { const m = q.length > 0 && w.key.includes(q); w.el.classList.toggle('match', m); if (m) { n++; hit.add(w.seg); } });
+  segEls.forEach((s, i) => s.el.classList.toggle('dim', q.length > 0 && !hit.has(i)));
+  $('#count').textContent = q.length ? (n === 0 ? 'No matches' : n === 1 ? '1 result' : n + ' results') : '';
+}
+$('#q').addEventListener('input', applySearch);
+$('#seek').addEventListener('input', e => seekTo(parseFloat(e.target.value) || 0));
+const isPlaying = () => S.mode === 'real' && S.media ? !S.media.paused : playing;
+function updatePlayButton(){
+  const p = isPlaying();
+  $('#play').setAttribute('aria-label', p ? 'Pause' : 'Play');
+  $('#icoPause').style.display = p ? '' : 'none';
+  $('#icoPlay').style.display = p ? 'none' : '';
+}
+$('#play').addEventListener('click', () => {
+  if (S.mode === 'real' && S.media) { if (S.media.paused) S.media.play().catch(() => {}); else S.media.pause(); }
+  else playing = !playing;
+  updatePlayButton();
+});
+['play', 'pause', 'ended'].forEach(ev => { $('#vid').addEventListener(ev, updatePlayButton); $('#aud').addEventListener(ev, updatePlayButton); });
+new IntersectionObserver(es => es.forEach(e => { seen = e.isIntersecting; }), {threshold:.2}).observe($('#win'));
+function demoTick(dt){
+  if (S.mode === 'sample') { if (playing && seen && !document.hidden && !editing) { t += dt; if (t >= DUR) t = 0; drawTranscript(false); } }
+  else if (S.media && !S.media.paused) drawTranscript(false);
+}
+
+/* Waveform under the player */
+const BARS = (() => { let s = 3; const r = () => (s = (s * 9301 + 49297) % 233280) / 233280; return Array.from({length: 96}, (_, i) => .18 + .82 * Math.abs(Math.sin(i * .37) * .6 + r() * .5) ); })();
+function makeBars(pcm){
+  const n = 96, step = Math.max(1, Math.floor(pcm.length / n)), out = [];
+  let max = 1e-6;
+  for (let i = 0; i < n; i++) { let p = 0; const a = i * step, b = Math.min(pcm.length, a + step); for (let k = a; k < b; k += 16) { const v = Math.abs(pcm[k]); if (v > p) p = v; } out.push(p); if (p > max) max = p; }
+  return out.map(v => .12 + .88 * Math.sqrt(v / max));
+}
+function drawWave(){
+  const c = $('#waveCanvas'); if (!c) return;
+  const dpr = Math.min(devicePixelRatio || 1, 2), w = c.clientWidth, h = c.clientHeight;
+  if (!w || !h) return;
+  if (c.width !== Math.round(w*dpr) || c.height !== Math.round(h*dpr)) { c.width = Math.round(w*dpr); c.height = Math.round(h*dpr); }
+  const g = c.getContext('2d'); g.setTransform(dpr,0,0,dpr,0,0); g.clearRect(0,0,w,h);
+  const bars = S.bars || BARS, n = bars.length, gap = 2, bw = Math.max(1.5, (w - gap*(n-1)) / n), split = t / Math.max(.001, S.dur) * w;
+  for (let i = 0; i < n; i++) {
+    const x = i * (bw + gap), bh = Math.max(3, bars[i] * h * .9);
+    g.fillStyle = x + bw/2 < split ? '#FFD24A' : 'rgba(236,235,250,.22)';
+    g.beginPath(); if (g.roundRect) g.roundRect(x, (h-bh)/2, bw, bh, bw/2); else g.rect(x, (h-bh)/2, bw, bh); g.fill();
+  }
+}
+addEventListener('resize', drawWave);
+
+/* Export */
+function stamp(s, sep){ const ms = Math.round(s*1000); const h = Math.floor(ms/3600000), m = Math.floor(ms/60000)%60, sec = Math.floor(ms/1000)%60, r = ms%1000;
+  return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0')+sep+String(r).padStart(3,'0'); }
+function exportText(kind){
+  const segs = S.segs;
+  if (kind === 'srt') return segs.map((g, i) => (i+1)+'\n'+stamp(g.start, ',')+' --> '+stamp(Math.max(g.end, g.start + .5), ',')+'\n'+g.text+'\n').join('\n');
+  if (kind === 'vtt') return 'WEBVTT\n\n' + segs.map(g => stamp(g.start, '.')+' --> '+stamp(Math.max(g.end, g.start + .5), '.')+'\n'+g.text+'\n').join('\n');
+  return segs.map(g => '['+mmss(g.start)+'] '+g.text).join('\n');
+}
+function flash(msg){ const m = $('#copied'); m.textContent = msg; clearTimeout(flash.tm); flash.tm = setTimeout(() => { m.textContent = ''; }, 3500); }
+async function copyOut(kind){
+  const txt = exportText(kind), box = $('#copyBox');
+  try { await navigator.clipboard.writeText(txt); box.classList.remove('show'); flash('Copied '+kind.toUpperCase()+' to the clipboard.'); }
+  catch (e) { box.value = txt; box.classList.add('show'); box.focus(); box.select(); flash('Select the text below and copy it.'); }
+}
+function download(kind){
+  const base = S.name.replace(/\.[^.]+$/, '') || 'transcript';
+  const blob = new Blob([exportText(kind)], { type: kind === 'vtt' ? 'text/vtt' : 'text/plain' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = base + '.' + kind;
+  document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  flash('Saved '+base+'.'+kind+'.');
+}
+$$('[data-copy]').forEach(b => b.addEventListener('click', () => copyOut(b.dataset.copy)));
+$$('[data-dl]').forEach(b => b.addEventListener('click', () => download(b.dataset.dl)));
+
+/* Picking a file */
+function pickError(msg){ $('#pickErr').textContent = msg || ''; }
+function openPick(){ if (job) return; if (S.media) S.media.pause(); updatePlayButton(); pickError(''); refreshPickNote(); show('vPick'); }
+function refreshPickNote(){
+  $('#pickNote').textContent = (licensed() ? 'Licensed: recordings of any length. ' : 'Free for recordings up to 10 minutes. ') + 'The first time, the speech model downloads once and is saved in your browser.';
+}
+$('#newBtn').addEventListener('click', openPick);
+$('#pickBack').addEventListener('click', () => show('vResult'));
+$('#fileIn').addEventListener('change', e => { const f = e.target.files && e.target.files[0]; e.target.value = ''; handleFile(f); });
+function setupPick(){
+  const sel = $('#langSel');
+  LANGS.map((l, i) => [l[1], LANG_CODES[i]]).sort((a, b) => a[0].localeCompare(b[0])).forEach(([n, c]) => { const o = document.createElement('option'); o.value = c; o.textContent = n; sel.appendChild(o); });
+  const win = $('#win'); let depth = 0;
+  win.addEventListener('dragenter', e => { if (job) return; e.preventDefault(); depth++; win.classList.add('drag'); });
+  win.addEventListener('dragover', e => { if (!job) e.preventDefault(); });
+  win.addEventListener('dragleave', () => { depth = Math.max(0, depth - 1); if (!depth) win.classList.remove('drag'); });
+  win.addEventListener('drop', e => { e.preventDefault(); depth = 0; win.classList.remove('drag'); if (job) return; const f = e.dataTransfer.files && e.dataTransfer.files[0]; if (f) { show('vPick'); handleFile(f); } });
+}
+async function decode(file){
+  const buf = await file.arrayBuffer();
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  let ctx; try { ctx = new Ctx({ sampleRate: SR }); } catch (e) { ctx = new Ctx(); }
+  let ab; try { ab = await ctx.decodeAudioData(buf); } finally { try { ctx.close(); } catch (e) {} }
+  const mix = b => { const out = new Float32Array(b.length); for (let c = 0; c < b.numberOfChannels; c++) { const d = b.getChannelData(c); for (let i = 0; i < d.length; i++) out[i] += d[i] / b.numberOfChannels; } return out; };
+  if (ab.sampleRate === SR) return mix(ab);
+  const off = new OfflineAudioContext(1, Math.ceil(ab.duration * SR), SR);
+  const src = off.createBufferSource(); src.buffer = ab; src.connect(off.destination); src.start();
+  return mix(await off.startRendering());
+}
+
+/* Worker */
+let worker = null, job = null;
+function getWorker(){
+  if (worker) return worker;
+  const src = $('#workerSrc').textContent.replace('__TJS__', TJS);
+  worker = new Worker(URL.createObjectURL(new Blob([src], { type: 'text/javascript' })), { type: 'module' });
+  worker.onmessage = onWorker;
+  worker.onerror = e => failJob(e.message || 'The transcriber could not start.');
+  return worker;
+}
+function killWorker(){ if (worker) { worker.terminate(); worker = null; } }
+const mb = n => (n / 1048576).toFixed(n > 1048576 * 100 ? 0 : 1) + ' MB';
+function setWork(title, p, detail){
+  $('#workTitle').textContent = title;
+  $('#workBar').style.width = (clamp(p, 0, 1) * 100).toFixed(1) + '%';
+  $('#workPct').textContent = Math.floor(clamp(p, 0, 1) * 100) + ' %';
+  $('#workDetail').textContent = detail || '';
+}
+function addLive(sg){
+  const li = document.createElement('li');
+  const ts = document.createElement('span'); ts.className = 'ts'; ts.textContent = mmss(sg.start);
+  const tx = document.createElement('span'); tx.textContent = sg.text;
+  li.append(ts, tx); const box = $('#live'); box.appendChild(li); box.scrollTop = box.scrollHeight;
+}
+async function handleFile(file){
+  if (!file || job) return;
+  pickError('');
+  const okType = /^(audio|video)\//.test(file.type) || /\.(mp3|wav|m4a|aac|ogg|oga|opus|flac|webm|mp4|mov|m4v|mkv)$/i.test(file.name);
+  if (!okType) return pickError('That file isn’t audio or video. Try MP3, WAV, M4A, MP4 or WebM.');
+  if (file.size > 2e9) return pickError('That file is over 2 GB. Export just the audio, or trim it first.');
+  if (S.media) S.media.pause();
+  job = { file, segs: [], lang: null, started: performance.now() };
+  $('#live').textContent = ''; show('vWork'); setWork('Reading the file', 0, file.name);
+  let pcm;
+  try { pcm = await decode(file); }
+  catch (e) { job = null; show('vPick'); return pickError('This browser can’t read that file. Try MP3, WAV, M4A or MP4, or open the page in Chrome.'); }
+  if (!job) return;
+  const fullDur = pcm.length / SR;
+  if (fullDur < 0.5) { job = null; show('vPick'); return pickError('That recording has no sound we could read.'); }
+  job.fullDur = fullDur; job.bars = makeBars(pcm); job.limited = false;
+  if (!licensed() && fullDur > FREE_SECONDS + 1) { pcm = pcm.slice(0, FREE_SECONDS * SR); job.limited = true; }
+  job.dur = pcm.length / SR;
+  setWork('Loading the speech model', 0, 'Only the first time takes long. After that it starts in seconds.');
+  getWorker().postMessage({ type: 'run', audio: pcm, language: $('#langSel').value || null, model: MODELS[$('#modelSel').value] || MODELS.fast }, [pcm.buffer]);
+}
+function onWorker({ data: m }){
+  if (!job) return;
+  if (m.type === 'dl') setWork('Downloading the speech model', m.total ? m.loaded / m.total : 0, mb(m.loaded) + ' of ' + mb(m.total) + '. Only the first time.');
+  else if (m.type === 'ready') { job.device = m.device; setWork('Starting', 0, m.device === 'webgpu' ? 'Using your graphics card.' : 'Using your processor. Chrome or Edge on a computer is faster.'); }
+  else if (m.type === 'phase') setWork('Detecting the language', 0, '');
+  else if (m.type === 'lang') job.lang = m.lang;
+  else if (m.type === 'part') {
+    job.segs.push(...m.segs); m.segs.forEach(addLive);
+    const p = m.done / (job.dur * SR);
+    setWork('Transcribing', p, langName(job.lang) + ', ' + mmss(m.done / SR) + ' of ' + mmss(job.dur));
+  }
+  else if (m.type === 'done') finishJob();
+  else if (m.type === 'error') failJob(m.message);
+  else if (m.type === 'warn' && window.console) console.warn('[InkWhisper]', m.message);
+}
+function finishJob(){
+  const j = job; job = null;
+  if (S.url) URL.revokeObjectURL(S.url);
+  if (S.media) { S.media.pause(); S.media.removeAttribute('src'); S.media.load(); }
+  S.mode = 'real';
+  S.segs = j.segs.length ? j.segs : [{ start: 0, end: j.dur, text: 'No speech was found in this recording.' }];
+  S.dur = j.fullDur; S.bars = j.bars; S.limited = j.limited;
+  S.name = j.file.name; S.meta = langName(j.lang) + ', ' + mmss(j.fullDur);
+  S.url = URL.createObjectURL(j.file);
+  const isVideo = /^video\//.test(j.file.type) || /\.(mp4|mov|m4v|mkv|webm)$/i.test(j.file.name) && !/^audio\//.test(j.file.type);
+  S.media = isVideo ? $('#vid') : $('#aud');
+  S.media.src = S.url;
+  $('#player').classList.toggle('has-video', isVideo);
+  t = 0; $('#q').value = '';
+  setFileInfo(); buildTranscript(); show('vResult'); updatePlayButton();
+  $('#tr').scrollTop = 0;
+}
+function failJob(msg){
+  job = null; killWorker(); show('vPick');
+  const net = /fetch|network|load|404|Failed to/i.test(msg || '');
+  pickError(net ? 'Couldn’t download the speech model. Check your internet connection and try again.' : 'Something went wrong: ' + msg + ' Try again, or pick Fast quality.');
+}
+$('#cancelBtn').addEventListener('click', () => { job = null; killWorker(); show('vPick'); });
+
+/* ---------- License key (Polar) ----------
+   Keys look like INKW-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX. Polar checks each one on its server
+   and limits how many browsers can use it, so a guessed or shared key doesn't work. */
+const LIC_STORE = 'inkwhisper.license';
+const store = { get(){ try { return JSON.parse(localStorage.getItem(LIC_STORE)); } catch (e) { return null; } }, set(v){ try { v ? localStorage.setItem(LIC_STORE, JSON.stringify(v)) : localStorage.removeItem(LIC_STORE); } catch (e) {} } };
+let license = store.get();
+const licensed = () => !!(CONFIG.polarOrganizationId && license && license.key);
+const polarUrl = ep => (CONFIG.polarSandbox ? 'https://sandbox-api.polar.sh' : 'https://api.polar.sh') + '/v1/customer-portal/license-keys/' + ep;
+async function polar(ep, body){
+  const r = await fetch(polarUrl(ep), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ organization_id: CONFIG.polarOrganizationId, ...body }) });
+  let d = null; try { d = await r.json(); } catch (e) {}
+  return { ok: r.ok, status: r.status, data: d };
+}
+const detailOf = d => d && typeof d.detail === 'string' ? d.detail : '';
+function browserLabel(){
+  const u = navigator.userAgent;
+  const b = /Edg\//.test(u) ? 'Edge' : /OPR\//.test(u) ? 'Opera' : /Firefox\//.test(u) ? 'Firefox' : /Chrome\//.test(u) ? 'Chrome' : /Safari\//.test(u) ? 'Safari' : 'Browser';
+  const o = /Windows/.test(u) ? 'Windows' : /Android/.test(u) ? 'Android' : /iPhone|iPad/.test(u) ? 'iOS' : /Mac OS X/.test(u) ? 'Mac' : /Linux/.test(u) ? 'Linux' : 'a device';
+  return b + ' on ' + o;
+}
+const maskKey = k => k && k.length > 8 ? k.slice(0, 5) + '…' + k.slice(-6) : (k || '');
+function renderLicense(){
+  const on = licensed();
+  $('#keyBtn').textContent = on ? 'Licensed' : 'Enter license key';
+  $('#keyBtn').classList.toggle('is-on', on);
+  $('#keyIntro').textContent = on ? 'Active in this browser: ' + maskKey(license.key) + '. Recordings of any length are unlocked.' : 'Paste the key from your purchase email. It unlocks recordings of any length in this browser.';
+  $('#keyField').hidden = on; $('#keyGo').hidden = on; $('#keyRemove').hidden = !on;
+  refreshPickNote();
+}
+function openKey(from){
+  if (!CONFIG.polarOrganizationId) { openDlg('#demoDlg', from); return; }
+  $('#keyMsg').textContent = ''; $('#keyMsg').className = 'msg'; $('#keyIn').value = '';
+  renderLicense(); openDlg('#keyDlg', from);
+  if (!licensed()) setTimeout(() => $('#keyIn').focus(), 30);
+}
+function keyMsg(text, ok){ const m = $('#keyMsg'); m.textContent = text; m.className = 'msg' + (ok ? ' ok' : ' bad'); }
+$('#keyBtn').addEventListener('click', e => openKey(e.currentTarget));
+$('#limitKey').addEventListener('click', e => openKey(e.currentTarget));
+$('#keyForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const key = $('#keyIn').value.trim();
+  if (key.length < 20) return keyMsg('That doesn’t look like a full license key. Copy the whole key from your email.');
+  const go = $('#keyGo'); go.disabled = true; keyMsg('Checking your key…', true);
+  try {
+    let r = await polar('activate', { key, label: browserLabel(), meta: { site: location.hostname || 'local' } });
+    if (r.ok && r.data && r.data.id) { license = { key, activation: r.data.id }; }
+    else if (r.status === 403 && /activation/i.test(detailOf(r.data)) && !/limit|only supports/i.test(detailOf(r.data))) {
+      // The key has no activation limit: just check that it is valid.
+      const v = await polar('validate', { key });
+      if (v.ok && v.data && v.data.status === 'granted') license = { key };
+      else throw { shown: 'This key isn’t active. If you got a refund, the key was turned off.' };
+    }
+    else if (r.status === 404) throw { shown: 'That key doesn’t exist. Check for typos, or copy it again from your email.' };
+    else if (r.status === 403) throw { shown: 'This key is already used in ' + CONFIG.devices + ' browsers. Remove it from one of them first, then try again.' };
+    else if (r.status === 429) throw { shown: 'Too many tries. Wait a moment and try again.' };
+    else throw { shown: detailOf(r.data) || 'The key couldn’t be activated. Try again in a moment.' };
+    store.set(license); renderLicense(); keyMsg('Done. InkWhisper is unlocked in this browser.', true);
+  } catch (err) {
+    keyMsg(err && err.shown ? err.shown : 'Couldn’t reach the license server. Check your internet connection.');
+  } finally { go.disabled = false; }
+});
+$('#keyRemove').addEventListener('click', async () => {
+  if (!license) return;
+  keyMsg('Removing…', true);
+  try { if (license.activation) await polar('deactivate', { key: license.key, activation_id: license.activation }); } catch (e) {}
+  license = null; store.set(null); renderLicense(); keyMsg('Removed from this browser. You can use the key somewhere else now.', true);
+});
+async function recheckLicense(){
+  if (!licensed()) return;
+  try {
+    const r = await polar('validate', license.activation ? { key: license.key, activation_id: license.activation } : { key: license.key });
+    if ((r.ok && r.data && r.data.status !== 'granted') || r.status === 404) { license = null; store.set(null); }
+  } catch (e) { /* offline: keep the saved license */ }
+  renderLicense();
+}
+
+/* ---------- Feature tile demos ---------- */
+const KARA = 'Every word gets a timestamp, so you can jump straight to it.'.split(' ');
+const LANGS = [["Hello", "English"], ["你好", "Chinese"], ["Hallo", "German"], ["Hola", "Spanish"], ["Привет", "Russian"], ["안녕하세요", "Korean"], ["Bonjour", "French"], ["こんにちは", "Japanese"], ["Olá", "Portuguese"], ["Merhaba", "Turkish"], ["Cześć", "Polish"], ["Hola", "Catalan"], ["Hallo", "Dutch"], ["مرحبا", "Arabic"], ["Hej", "Swedish"], ["Ciao", "Italian"], ["Halo", "Indonesian"], ["नमस्ते", "Hindi"], ["Hei", "Finnish"], ["Xin chào", "Vietnamese"], ["שלום", "Hebrew"], ["Привіт", "Ukrainian"], ["Γεια σου", "Greek"], ["Helo", "Malay"], ["Ahoj", "Czech"], ["Salut", "Romanian"], ["Hej", "Danish"], ["Szia", "Hungarian"], ["வணக்கம்", "Tamil"], ["Hei", "Norwegian"], ["สวัสดี", "Thai"], ["سلام", "Urdu"], ["Bok", "Croatian"], ["Здравей", "Bulgarian"], ["Labas", "Lithuanian"], ["Salve", "Latin"], ["Kia ora", "Māori"], ["നമസ്കാരം", "Malayalam"], ["Helo", "Welsh"], ["Ahoj", "Slovak"], ["నమస్కారం", "Telugu"], ["سلام", "Persian"], ["Sveiki", "Latvian"], ["নমস্কার", "Bengali"], ["Здраво", "Serbian"], ["Salam", "Azerbaijani"], ["Živjo", "Slovenian"], ["ನಮಸ್ಕಾರ", "Kannada"], ["Tere", "Estonian"], ["Здраво", "Macedonian"], ["Demat", "Breton"], ["Kaixo", "Basque"], ["Halló", "Icelandic"], ["Բարեւ", "Armenian"], ["नमस्ते", "Nepali"], ["Сайн байна уу", "Mongolian"], ["Zdravo", "Bosnian"], ["Сәлем", "Kazakh"], ["Përshëndetje", "Albanian"], ["Habari", "Swahili"], ["Ola", "Galician"], ["नमस्कार", "Marathi"], ["ਸਤ ਸ੍ਰੀ ਅਕਾਲ", "Punjabi"], ["ආයුබෝවන්", "Sinhala"], ["សួស្តី", "Khmer"], ["Mhoro", "Shona"], ["Bawo", "Yoruba"], ["Salaan", "Somali"], ["Hallo", "Afrikaans"], ["Bonjorn", "Occitan"], ["გამარჯობა", "Georgian"], ["Прывітанне", "Belarusian"], ["Салом", "Tajik"], ["سلام", "Sindhi"], ["નમસ્તે", "Gujarati"], ["ሰላም", "Amharic"], ["שלום", "Yiddish"], ["ສະບາຍດີ", "Lao"], ["Salom", "Uzbek"], ["Halló", "Faroese"], ["Bonjou", "Haitian Creole"], ["سلام", "Pashto"], ["Salam", "Turkmen"], ["Hei", "Nynorsk"], ["Bonġu", "Maltese"], ["नमस्ते", "Sanskrit"], ["Moien", "Luxembourgish"], ["မင်္ဂလာပါ", "Burmese"], ["བཀྲ་ཤིས་བདེ་ལེགས།", "Tibetan"], ["Kumusta", "Tagalog"], ["Salama", "Malagasy"], ["নমস্কাৰ", "Assamese"], ["Сәлам", "Tatar"], ["Aloha", "Hawaiian"], ["Mbote", "Lingala"], ["Sannu", "Hausa"], ["Сәләм", "Bashkir"], ["Halo", "Javanese"], ["Sampurasun", "Sundanese"]];
+function fitLangs(){
+  const box = $('.lang'); if (!box) return; const max = box.clientWidth;
+  $$('#langTrack b').forEach(b => { b.style.transform = ''; const w = b.scrollWidth; if (w > max && max > 0) b.style.transform = 'scale('+(max/w).toFixed(3)+')'; });
+}
+addEventListener('resize', fitLangs);
+const SRT_TEXT = [['1','00:00:00,000 --> 00:00:03,200','Okay, let’s start with the budget.'],['2','00:00:03,200 --> 00:00:07,000','I sent the draft on Monday.']];
+const feat = { seen: false, k: 0, kt: 0, li: 0, lt: 0, off: 0, offOn: false, fs: 0, ft: 0, srt: 0, st: 0 };
+function buildFeatures(){
+  const k = $('#karaoke'); k.textContent = '';
+  KARA.forEach((w, i) => { const s = document.createElement('span'); s.textContent = w; k.appendChild(s); if (i < KARA.length-1) k.appendChild(document.createTextNode(' ')); });
+  const lt = $('#langTrack'); lt.textContent = '';
+  [...LANGS, LANGS[0]].forEach(([w, n]) => { const d = document.createElement('div'); const b = document.createElement('b'); b.textContent = w; const s = document.createElement('small'); s.textContent = n; d.append(b, s); lt.appendChild(d); });
+  const names = LANGS.map(l => l[1]);
+  const tk = $('#ticker'); tk.textContent = '';
+  [...names, ...names].forEach(n => { const s = document.createElement('span'); s.textContent = n; tk.appendChild(s); });
+  $('#langList').textContent = names.join(', ');
+  fitLangs(); if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitLangs);
+  if (reduce) { $$('#karaoke span').forEach(s => s.classList.add('done')); $('#fsText').textContent = 'zurich'; $('#srt').innerHTML = srtHtml(1e9); $('#offline').classList.add('on'); $('#offBar').style.width = '64%'; $('#offNote').textContent = 'Offline. Still transcribing.'; }
+}
+function srtHtml(chars){
+  let out = '', left = chars;
+  for (const [n, time, text] of SRT_TEXT) {
+    for (const [part, cls] of [[n+'\n','b'],[time+'\n',''],[text+'\n\n','']]) {
+      if (left <= 0) break;
+      const piece = part.slice(0, left); left -= part.length;
+      const esc = piece.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+      out += cls ? '<b>'+esc+'</b>' : esc;
+    }
+  }
+  return out;
+}
+const SRT_LEN = SRT_TEXT.reduce((a, [n, t, x]) => a + n.length + t.length + x.length + 4, 0);
+function featTick(dt){
+  if (reduce || !feat.seen || document.hidden) return;
+  // karaoke
+  feat.kt += dt;
+  if (feat.kt > .36) {
+    feat.kt = 0; const sp = $$('#karaoke span');
+    if (feat.k < sp.length) { sp.forEach((s, i) => { s.classList.toggle('done', i < feat.k); s.classList.toggle('now', i === feat.k); }); feat.k++; }
+    else if (feat.k < sp.length + 6) { sp.forEach(s => { s.classList.remove('now'); s.classList.add('done'); }); feat.k++; }
+    else { sp.forEach(s => s.classList.remove('done','now')); feat.k = 0; }
+  }
+  // languages
+  feat.lt += dt;
+  if (feat.lt > 1.25) {
+    feat.lt = 0; feat.li++;
+    $('#langNum').textContent = (feat.li % LANGS.length + 1)+' / '+LANGS.length;
+    const tr = $('#langTrack');
+    tr.style.transition = ''; tr.style.transform = 'translateY('+(-84*feat.li)+'px)';
+    if (feat.li === LANGS.length) setTimeout(() => { tr.style.transition = 'none'; tr.style.transform = 'translateY(0)'; feat.li = 0; }, 760);
+  }
+  // offline
+  feat.off += dt;
+  const o = $('#offline'), bar = $('#offBar'), note = $('#offNote');
+  if (feat.off > 1.2 && !feat.offOn) { feat.offOn = true; o.classList.add('on'); }
+  const pct = clamp((feat.off - .3) / 6, 0, 1) * 100;
+  bar.style.width = pct + '%';
+  note.textContent = feat.offOn ? (pct >= 100 ? 'Done. No internet used.' : 'Offline. Still transcribing '+Math.floor(pct)+' %') : 'Transcribing '+Math.floor(pct)+' %';
+  if (feat.off > 9) { feat.off = 0; feat.offOn = false; o.classList.remove('on'); }
+  // search typing
+  feat.ft += dt;
+  const q = 'zurich';
+  if (feat.ft > .2) {
+    feat.ft = 0; feat.fs++;
+    const n = feat.fs % 26, shown = Math.min(n, q.length);
+    $('#fsText').textContent = q.slice(0, shown);
+    $('#fsFound').style.opacity = shown === q.length ? 1 : .35;
+  }
+  // srt typing
+  feat.st += dt;
+  if (feat.st > .03) { feat.st = 0; feat.srt = (feat.srt + 1) % (SRT_LEN + 70); $('#srt').innerHTML = srtHtml(feat.srt); }
+}
+new IntersectionObserver(es => es.forEach(e => { feat.seen = e.isIntersecting; }), {threshold:.15}).observe($('#bento'));
+
+/* ---------- License card tilt ---------- */
+(function(){
+  const wrap = $('#cardWrap'), card = $('#lic');
+  if (reduce || !matchMedia('(pointer: fine)').matches) return;
+  wrap.addEventListener('pointermove', e => {
+    const r = wrap.getBoundingClientRect();
+    const x = (e.clientX - r.left)/r.width - .5, y = (e.clientY - r.top)/r.height - .5;
+    card.style.transform = 'rotateY('+(x*18).toFixed(2)+'deg) rotateX('+(-y*14).toFixed(2)+'deg)';
+    card.style.setProperty('--gx', ((x+.5)*100).toFixed(1)+'%');
+    card.style.setProperty('--gy', ((y+.5)*100).toFixed(1)+'%');
+  });
+  wrap.addEventListener('pointerleave', () => { card.style.transform = ''; });
+})();
+
+/* ---------- Scroll-linked effects ---------- */
+const story = $('#top'), copyA = $('#copyA'), copyB = $('#copyB'), hint = $('#hint'), head = $('#head');
+const win = $('#win'), stepsEl = $('#steps'), finalEl = $('#final');
+let progress = 0, shown = 0;
+function readScroll(){
+  const r = story.getBoundingClientRect();
+  progress = clamp(-r.top/Math.max(1, r.height - innerHeight), 0, 1);
+  head.classList.toggle('solid', r.bottom < 120);
+  if (window.__scene) window.__scene.setProgress(progress);
+  if (reduce) { shown = progress; paintCopy(); }
+  if (!reduce) {
+    // App window: tilted back while it enters, flat once it is in view
+    const wr = win.getBoundingClientRect();
+    const p = clamp(1 - (wr.top - innerHeight * .12) / (innerHeight * .72), 0, 1);
+    const e = 1 - Math.pow(1 - p, 3);
+    win.style.transform = 'rotateX('+(18*(1-e)).toFixed(2)+'deg) scale('+(0.9 + 0.1*e).toFixed(4)+')';
+  }
+  // Timeline fill
+  const sr = stepsEl.getBoundingClientRect();
+  const sp = clamp((innerHeight * .75 - sr.top) / (sr.height + innerHeight * .2), 0, 1);
+  stepsEl.style.setProperty('--p', sp.toFixed(3));
+  $$('#steps .step').forEach((s, i) => s.classList.toggle('lit', sp > i / 3 + .04));
+  // Final wave
+  if (finalEl.getBoundingClientRect().top < innerHeight * .8) finalEl.classList.add('in');
+}
+function paintCopy(){
+  const outA = smoother(.04, .30, shown), inB = smoother(.56, .80, shown);
+  copyA.style.opacity = (1 - outA).toFixed(3);
+  copyA.style.transform = reduce ? '' : 'translate3d(0,'+(-44*outA).toFixed(2)+'px,0)';
+  copyA.style.visibility = outA > .99 ? 'hidden' : 'visible';
+  copyB.style.opacity = inB.toFixed(3);
+  copyB.style.transform = reduce ? '' : 'translate3d(0,'+(32*(1-inB)).toFixed(2)+'px,0)';
+  copyB.style.visibility = inB < .01 ? 'hidden' : 'visible';
+  hint.style.opacity = shown > .03 ? 0 : 1;
+}
+function copyTick(dt){
+  if (reduce) return;
+  const k = 1 - Math.exp(-dt*7);
+  const next = shown + (progress - shown)*k;
+  if (Math.abs(next - shown) > 1e-5) { shown = next; paintCopy(); }
+}
+// Smooth, inertial wheel scrolling (Lenis). Native scrolling stays for touch and reduced motion.
+let lenis = null;
+if (!reduce && window.Lenis) {
+  try { lenis = new Lenis({ lerp: 0.085, wheelMultiplier: 0.9, smoothWheel: true, anchors: { offset: -90 }, autoRaf: false }); window.__lenis = lenis; }
+  catch(e) { lenis = null; }
+}
+addEventListener('scroll', readScroll, {passive:true});
+addEventListener('resize', readScroll);
+
+/* ---------- 3D scene ----------
+   1. On load, scattered particles drift in and gather into a voice wave (about 4 s).
+   2. While you scroll through the long intro, the wave slowly unravels into lines of text. */
+function initScene(){
+  const canvas = $('#scene');
+  if (!window.THREE) { document.documentElement.classList.add('no-webgl'); return; }
+  let renderer;
+  try { renderer = new THREE.WebGLRenderer({canvas, antialias:false, alpha:false, stencil:false, powerPreference:'high-performance'}); }
+  catch(e) { document.documentElement.classList.add('no-webgl'); return; }
+  if (!renderer.getContext()) { document.documentElement.classList.add('no-webgl'); return; }
+  renderer.setClearColor(0x0E1030, 1);
+  const DPR = Math.min(window.devicePixelRatio || 1, 1.5);
+  renderer.setPixelRatio(DPR);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(38, 1, .1, 100);
+  camera.position.set(0, 0, 13);
+  const group = new THREE.Group(); scene.add(group);
+
+  let seed = 7; const rnd = () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let x = Math.imul(seed ^ seed >>> 15, 1 | seed); x = x + Math.imul(x ^ x >>> 7, 61 | x) ^ x; return ((x ^ x >>> 14) >>> 0) / 4294967296; };
+  const small = Math.min(innerWidth, innerHeight) < 700;
+  const N = small ? 6000 : 12000;
+
+  const ROWS = 6, GAP = .62, LINE_H = .15, WIDTH = 7.2;
+  const blocks = [];
+  for (let r = 0; r < ROWS; r++) {
+    const y = (ROWS-1)/2*GAP - r*GAP;
+    const rowW = r === ROWS-1 ? WIDTH*.52 : WIDTH*(.84 + rnd()*.16);
+    let x = -WIDTH/2;
+    while (x < -WIDTH/2 + rowW - .25) {
+      const x1 = Math.min(x + .32 + rnd()*1.1, -WIDTH/2 + rowW);
+      blocks.push({x0:x, x1, y}); x = x1 + .2;
+    }
+  }
+  const cum = []; let tot = 0; blocks.forEach(b => { tot += b.x1 - b.x0; cum.push(tot); });
+
+  const aWave = new Float32Array(N*3), aText = new Float32Array(N*3), aStart = new Float32Array(N*3), aRand = new Float32Array(N), aWord = new Float32Array(N);
+  for (let i = 0; i < N; i++) {
+    const u = rnd()*2 - 1;
+    aWave[i*3] = u < 0 ? -Math.pow(-u, .85) * 5.2 : Math.pow(u, .85) * 6.4;
+    aWave[i*3+1] = rnd()*Math.PI*2;
+    aWave[i*3+2] = rnd();
+    const pick = rnd()*tot; let k = 0; while (cum[k] < pick) k++;
+    const b = blocks[k];
+    aText[i*3] = b.x0 + rnd()*(b.x1 - b.x0);
+    aText[i*3+1] = b.y + (rnd() - .5)*LINE_H;
+    aText[i*3+2] = (rnd() - .5)*.06;
+    const th = rnd()*Math.PI*2, ph = Math.acos(rnd()*2 - 1), rad = 7 + rnd()*9;
+    aStart[i*3] = Math.sin(ph)*Math.cos(th)*rad*1.4;
+    aStart[i*3+1] = Math.sin(ph)*Math.sin(th)*rad*.8;
+    aStart[i*3+2] = Math.cos(ph)*rad - 4;
+    aRand[i] = rnd(); aWord[i] = k;
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(aText.slice(), 3));
+  geo.setAttribute('aWave', new THREE.BufferAttribute(aWave, 3));
+  geo.setAttribute('aText', new THREE.BufferAttribute(aText, 3));
+  geo.setAttribute('aStart', new THREE.BufferAttribute(aStart, 3));
+  geo.setAttribute('aRand', new THREE.BufferAttribute(aRand, 1));
+  geo.setAttribute('aWord', new THREE.BufferAttribute(aWord, 1));
+
+  const uniforms = { uTime:{value:0}, uMix:{value:0}, uIntro:{value:reduce ? 1 : 0}, uActive:{value:-1}, uGlow:{value:0}, uPx:{value:DPR}, uSize:{value:44} };
+  const mat = new THREE.ShaderMaterial({
+    uniforms, transparent:true, depthWrite:false, blending:THREE.AdditiveBlending,
+    vertexShader: `
+      uniform float uTime; uniform float uMix; uniform float uIntro; uniform float uActive; uniform float uGlow; uniform float uPx; uniform float uSize;
+      attribute vec3 aWave; attribute vec3 aText; attribute vec3 aStart; attribute float aRand; attribute float aWord;
+      varying vec3 vColor; varying float vAlpha;
+      float ease(float t){ return t*t*t*(t*(t*6.0 - 15.0) + 10.0); }
+      void main(){
+        float x = aWave.x;
+        float env = exp(-x*x*0.05);
+        float syl = 0.6 + 0.4*sin(uTime*1.9 + x*0.7);
+        float amp = (0.32 + 0.68*abs(sin(x*1.15 - uTime*0.85) * cos(x*0.42 + uTime*0.4))) * syl;
+        float r = (0.16 + 1.75*env*amp) * (0.8 + aWave.z*0.4);
+        float th = aWave.y + x*0.18 + uTime*0.12;
+        vec3 pA = vec3(x, cos(th)*r, sin(th)*r);
+        float ii = ease(clamp(uIntro*1.5 - aRand*0.5, 0.0, 1.0));
+        vec3 pS = aStart + vec3(sin(uTime*0.3 + aRand*6.0), cos(uTime*0.25 + aRand*5.0), 0.0)*0.4;
+        vec3 pI = mix(pS, pA, ii);
+        pI.y += sin(ii*3.14159)*(aRand - 0.5)*1.6;
+        float m = ease(clamp(uMix*1.45 - aRand*0.45, 0.0, 1.0));
+        vec3 pB = aText;
+        pB.y += sin(uTime*0.6 + aText.x*0.5)*0.02;
+        vec3 p = mix(pI, pB, m);
+        float s = sin(m*3.14159);
+        p.z += s*(aRand - 0.5)*1.8;
+        p.y += s*sin(aRand*40.0)*0.35;
+        p.x += s*cos(aRand*23.0)*0.25;
+        vec4 mv = modelViewMatrix * vec4(p, 1.0);
+        gl_Position = projectionMatrix * mv;
+        gl_PointSize = uSize * uPx * (0.7 + aRand*0.6) * mix(1.0, 0.72, m) / -mv.z;
+        vec3 lilac = vec3(0.60, 0.53, 1.0);
+        vec3 bright = vec3(0.93, 0.92, 1.0);
+        vec3 cA = mix(lilac, bright, clamp(env*amp*1.1, 0.0, 1.0));
+        float act = (1.0 - smoothstep(0.0, 0.6, abs(aWord - uActive))) * uGlow;
+        vec3 cB = mix(vec3(0.62, 0.62, 0.84), vec3(1.0, 0.78, 0.22), act);
+        vColor = mix(cA, cB, m);
+        float fadeL = smoothstep(-5.2, -3.2, x);
+        float aWaveA = (0.32 + 0.6*env) * fadeL;
+        float aIntro = mix(0.4, 1.0, ii);
+        vAlpha = mix(aWaveA * aIntro, mix(0.42, 0.8, act), m);
+      }`,
+    fragmentShader: `
+      varying vec3 vColor; varying float vAlpha;
+      void main(){
+        vec2 c = gl_PointCoord - 0.5; float d = length(c);
+        if (d > 0.5) discard;
+        float a = smoothstep(0.5, 0.05, d);
+        gl_FragColor = vec4(vColor, a*vAlpha);
+      }`
+  });
+  const points = new THREE.Points(geo, mat); points.frustumCulled = false; group.add(points);
+
+  const DN = small ? 300 : 700, dPos = new Float32Array(DN*3);
+  for (let i = 0; i < DN; i++) { dPos[i*3] = (rnd()-.5)*34; dPos[i*3+1] = (rnd()-.5)*20; dPos[i*3+2] = -4 - rnd()*14; }
+  const dGeo = new THREE.BufferGeometry(); dGeo.setAttribute('position', new THREE.BufferAttribute(dPos, 3));
+  const dustMat = new THREE.PointsMaterial({color:0xA99BFF, size:.05, transparent:true, opacity:0, depthWrite:false});
+  const dust = new THREE.Points(dGeo, dustMat);
+  scene.add(dust);
+
+  let lastW = 0, lastH = 0;
+  function resize(){
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (!w || !h) return;
+    if (w === lastW && Math.abs(h - lastH) < 120 && lastH) return;
+    lastW = w; lastH = h;
+    renderer.setSize(w, h, false);
+    camera.aspect = w/h; camera.updateProjectionMatrix();
+    const halfW = Math.tan(camera.fov*Math.PI/360)*camera.position.z*camera.aspect;
+    if (w > 760) { const sc = clamp(halfW/7.4, .7, 1.05); group.scale.setScalar(sc); group.position.set(Math.min(3.6, halfW - 3.7*sc), 0, 0); }
+    else { const sc = clamp(halfW/4.1, .42, .8); group.scale.setScalar(sc); group.position.set(-0.6*sc, 2.3, 0); }
+  }
+  resize(); addEventListener('resize', resize);
+
+  const INTRO_SECONDS = 4.2;
+  let target = 0, mixV = 0, mixVel = 0, glow = 0, time = 0, intro = reduce ? 1 : 0, visible = true;
+  let mx = 0, my = 0, smx = 0, smy = 0, rx = 0.1, ry = -0.5, camZ = reduce ? 13 : 15.5;
+  if (!reduce) addEventListener('pointermove', e => { mx = e.clientX/innerWidth - .5; my = e.clientY/innerHeight - .5; }, {passive:true});
+  new IntersectionObserver(es => es.forEach(e => { visible = e.isIntersecting; })).observe(story);
+
+  function render(){
+    uniforms.uMix.value = mixV; uniforms.uTime.value = time; uniforms.uIntro.value = intro; uniforms.uGlow.value = glow;
+    uniforms.uActive.value = (time*1.6) % (blocks.length + 4) - 2;
+    dustMat.opacity = .45*Math.min(1, intro*1.5);
+    camera.position.z = camZ;
+    group.rotation.set(rx, ry, 0);
+    dust.rotation.y = time*.008;
+    renderer.render(scene, camera);
+  }
+  function frame(dt){
+    if (!visible || document.hidden) return;
+    if (!reduce) {
+      time += dt;
+      intro = Math.min(1, intro + dt/INTRO_SECONDS);
+      const w = 4.2;
+      const acc = w*w*(target - mixV) - 2*w*mixVel;
+      mixVel += acc*dt; mixV += mixVel*dt;
+      const k = 1 - Math.exp(-dt*1.6);
+      glow += ((mixV > .6 ? 1 : 0) - glow)*k;
+      smx += (mx - smx)*(1 - Math.exp(-dt*2.2)); smy += (my - smy)*(1 - Math.exp(-dt*2.2));
+      const baseY = -0.5 + 0.42*mixV;
+      const kr = 1 - Math.exp(-dt*2.5);
+      ry += ((baseY + smx*.3) - ry)*kr; rx += ((0.1 - 0.1*mixV + smy*.15) - rx)*kr;
+      camZ += (13 - camZ)*(1 - Math.exp(-dt*0.9));
+    } else { mixV = target; glow = mixV > .6 ? 1 : 0; }
+    render();
+  }
+  window.__scene = { frame, setProgress(p){ target = smoother(.1, .8, p); if (reduce) { mixV = target; render(); } } };
+  if (reduce) time = 3.2;
+  render();
+}
+
+/* ---------- One loop drives everything, so scroll, 3D and text stay in sync ---------- */
+let loopLast = performance.now();
+function loop(now){
+  requestAnimationFrame(loop);
+  const dt = Math.min((now - loopLast)/1000, 1/20); loopLast = now;
+  if (lenis) lenis.raf(now);
+  copyTick(dt);
+  if (window.__scene) window.__scene.frame(dt);
+  demoTick(dt);
+  capTick(dt);
+  featTick(dt);
+}
+
+/* ---------- Start ---------- */
+renderConfig();
+updatePlayButton();
+setupCheckout();
+setupPick();
+S.segs = sampleSegs;
+setFileInfo();
+buildTranscript();
+renderLicense();
+recheckLicense();
+buildFeatures();
+capBuild();
+if (reduce) { cap.words.forEach(s => s.classList.add('in')); }
+initScene();
+readScroll(); shown = progress; paintCopy();
+requestAnimationFrame(loop);
+checkThanks();
+</script>
+</body>
+</html>

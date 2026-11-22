@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy policy · InkWhisper</title>
+<meta name="theme-color" content="#0E1030">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&family=Unbounded:wght@800&display=swap">
+<style>
+:root{--bg:#0E1030;--text:#ECEBFA;--muted:#ABAAD2;--hl:#FFD24A;--line:rgba(180,179,214,.16)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:17px/1.7 'Onest',system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
+main{max-width:720px;margin:0 auto;padding:56px 24px 96px}
+a{color:var(--hl)}
+.back{display:inline-block;margin-bottom:40px;color:var(--muted);text-decoration:none}
+.back:hover{color:var(--text)}
+h1{font:800 clamp(36px,6vw,56px)/1.05 'Unbounded','Arial Black',system-ui,sans-serif;letter-spacing:-0.035em;margin:0 0 12px}
+h2{font-size:21px;margin:44px 0 10px}
+p,li{color:var(--muted)}
+p strong,li strong{color:var(--text)}
+.meta{margin-bottom:8px}
+.key{margin:32px 0 0;padding:20px 22px;border-radius:16px;background:rgba(255,210,74,.08);box-shadow:inset 0 0 0 1px rgba(255,210,74,.3);color:var(--text)}
+:focus-visible{outline:3px solid var(--hl);outline-offset:3px;border-radius:6px}
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="index.html">Back to InkWhisper</a>
+  <h1>Privacy policy</h1>
+  <p class="meta">Last updated: <span class="cfg-date">[date]</span></p>
+
+  <p class="key">Your recordings and transcripts never leave your device. InkWhisper transcribes inside your browser and does not upload audio, video or text anywhere.</p>
+
+  <h2>Who is responsible</h2>
+  <p><span class="cfg-seller">[your name]</span>, <span class="cfg-address">[address]</span>, <span class="cfg-email">[your email]</span>.</p>
+
+  <h2>The transcriber</h2>
+  <ul>
+    <li><strong>Recordings and transcripts</strong> are processed only in your browser. When you close the page they are gone, unless you saved them.</li>
+    <li><strong>License key.</strong> When you enter or re-check your key, the page sends the key and a label such as “Chrome on Windows” to Polar, so the key can be limited to your allowed number of browsers. The key is saved in your browser so you don’t have to enter it again.</li>
+    <li><strong>Speech models</strong> are downloaded once from Hugging Face and the transcription engine from jsDelivr, then kept in your browser. Like any download, this shows your IP address to those services.</li>
+    <li>There are no analytics, no tracking and no ads.</li>
+  </ul>
+
+  <h2>Buying</h2>
+  <p>Payment happens in Polar’s checkout. Polar, as the Merchant of Record, collects your name, email, billing country and payment details to process the order, prevent fraud and handle tax. We receive your name, email and order details from Polar so we can deliver the license and answer support requests. We never see your full card number. See <a href="https://polar.sh/legal/privacy">Polar’s privacy policy</a>.</p>
+
+  <h2>This website</h2>
+  <p>The website has no analytics and sets no tracking cookies. It loads fonts from Google Fonts and scripts from cdnjs and jsDelivr, which see your IP address when your browser fetches them.</p>
+
+  <h2>Email</h2>
+  <p>If you write to us, we use your email only to answer you and keep the conversation as long as needed for support and legal records.</p>
+
+  <h2>How long we keep data</h2>
+  <p>Order records are kept as long as accounting law requires. You can ask us to delete anything else at any time.</p>
+
+  <h2>Your rights</h2>
+  <p>Under the GDPR you can ask to see, correct, delete or export your personal data, or object to how it is used. Write to <span class="cfg-email">[your email]</span>. You can also complain to your data protection authority. In Slovakia that is the Úrad na ochranu osobných údajov.</p>
+</main>
+<script>
+/* Fill these in once, and use the same values as CONFIG in index.html. */
+const LEGAL = { seller:'', email:'', address:'', date:'' };
+const set = (c, v) => { if (v) document.querySelectorAll(c).forEach(e => { e.textContent = v; }); };
+set('.cfg-seller', LEGAL.seller); set('.cfg-address', LEGAL.address); set('.cfg-date', LEGAL.date);
+if (LEGAL.email) document.querySelectorAll('.cfg-email').forEach(e => { e.textContent = ''; const a = document.createElement('a'); a.href = 'mailto:' + LEGAL.email; a.textContent = LEGAL.email; e.appendChild(a); });
+</script>
+</body>
+</html>

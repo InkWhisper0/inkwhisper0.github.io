@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terms of sale · InkWhisper</title>
+<meta name="theme-color" content="#0E1030">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&family=Unbounded:wght@800&display=swap">
+<style>
+:root{--bg:#0E1030;--text:#ECEBFA;--muted:#ABAAD2;--hl:#FFD24A;--line:rgba(180,179,214,.16)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:17px/1.7 'Onest',system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
+main{max-width:720px;margin:0 auto;padding:56px 24px 96px}
+a{color:var(--hl)}
+.back{display:inline-block;margin-bottom:40px;color:var(--muted);text-decoration:none}
+.back:hover{color:var(--text)}
+h1{font:800 clamp(36px,6vw,56px)/1.05 'Unbounded','Arial Black',system-ui,sans-serif;letter-spacing:-0.035em;margin:0 0 12px}
+h2{font-size:21px;margin:44px 0 10px}
+p,li{color:var(--muted)}
+p strong,li strong{color:var(--text)}
+.meta{margin-bottom:8px}
+:focus-visible{outline:3px solid var(--hl);outline-offset:3px;border-radius:6px}
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="index.html">Back to InkWhisper</a>
+  <h1>Terms of sale</h1>
+  <p class="meta">Last updated: <span class="cfg-date">[date]</span></p>
+
+  <h2>Who sells InkWhisper</h2>
+  <p>InkWhisper is made by <strong class="cfg-seller">[your name]</strong>. Orders are processed by <strong>Polar Software Inc.</strong> (“Polar”), which acts as the Merchant of Record. Polar is the seller you pay, issues your receipt and handles VAT and sales tax. Polar’s <a href="https://polar.sh/legal/terms">terms</a> also apply to your purchase.</p>
+
+  <h2>What you get</h2>
+  <ul>
+    <li>A license key, sent by email right after payment. You paste it into InkWhisper on our website.</li>
+    <li>Transcription of recordings of any length. Without a key, InkWhisper is free for recordings up to 10 minutes.</li>
+    <li>A personal license for <strong>one person</strong> in up to <strong class="cfg-devices">2</strong> browsers at a time. You can move it by removing it from one browser in the license window.</li>
+    <li>Improvements we make to InkWhisper, at no extra cost.</li>
+  </ul>
+
+  <h2>Price and payment</h2>
+  <p>The price is shown on the website. It is a one-time payment, not a subscription. VAT or sales tax is added at checkout based on your country, as Polar calculates it.</p>
+
+  <h2>Refunds</h2>
+  <p>If InkWhisper doesn’t work for you, write to <span class="cfg-email">[your email]</span> within <strong class="cfg-refund">14</strong> days of purchase and you get your money back. After a refund the license key stops working.</p>
+  <p>If you live in the EU, you have a legal right to withdraw from an online purchase within 14 days. For digital content this right can end once the download starts, if you agreed to that at checkout. Our refund promise above applies either way.</p>
+
+  <h2>What you may do with the license</h2>
+  <ul>
+    <li>Use InkWhisper for personal and commercial work, including client projects.</li>
+    <li>Keep and use everything you transcribe. Your transcripts belong to you.</li>
+  </ul>
+  <p>You may not share, resell or publish your license key, or try to get around the license check.</p>
+
+  <h2>How it works and its limits</h2>
+  <p>InkWhisper transcribes inside your browser with the open Whisper speech model. It needs a modern browser; Chrome or Edge on a computer works best. Transcripts can contain mistakes, especially with noisy recordings, strong accents or less common languages. Check important transcripts before you rely on them. Speed depends on your computer.</p>
+  <p>InkWhisper is provided “as is”. To the extent the law allows, we are not liable for indirect losses or for lost data. This does not limit any rights you have as a consumer under the law of your country.</p>
+
+  <h2>Third-party software</h2>
+  <p>InkWhisper uses open-source software and models: Transformers.js and ONNX Runtime (Apache 2.0) and the Whisper models (MIT). InkWhisper is not made by or affiliated with OpenAI.</p>
+
+  <h2>Contact</h2>
+  <p><span class="cfg-seller">[your name]</span>, <span class="cfg-address">[address]</span>, <span class="cfg-email">[your email]</span></p>
+</main>
+<script>
+/* Fill these in once, and use the same values as CONFIG in index.html. */
+const LEGAL = { seller:'', email:'', address:'', devices:2, refundDays:14, date:'' };
+const set = (c, v) => { if (v) document.querySelectorAll(c).forEach(e => { e.textContent = v; }); };
+set('.cfg-seller', LEGAL.seller); set('.cfg-address', LEGAL.address); set('.cfg-date', LEGAL.date);
+set('.cfg-devices', String(LEGAL.devices)); set('.cfg-refund', String(LEGAL.refundDays));
+if (LEGAL.email) document.querySelectorAll('.cfg-email').forEach(e => { e.textContent = ''; const a = document.createElement('a'); a.href = 'mailto:' + LEGAL.email; a.textContent = LEGAL.email; e.appendChild(a); });
+</script>
+</body>
+</html>
