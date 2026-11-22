@@ -514,7 +514,7 @@ dialog::backdrop{background:rgba(10,11,32,.72);backdrop-filter:blur(6px)}
     <div class="wrap">
       <div class="sec-head">
         <h2>Try it right here.</h2>
-        <p>Drop a recording or a video. It is transcribed inside this browser and never uploaded. Free for recordings up to 10 minutes.</p>
+        <p>Drop a recording or a video. It is transcribed inside this browser and never uploaded. Free for recordings up to 2 minutes.</p>
       </div>
       <div class="app-stage">
         <div class="win" id="win">
@@ -580,7 +580,7 @@ dialog::backdrop{background:rgba(10,11,32,.72);backdrop-filter:blur(6px)}
                   <span class="pill" id="modePill">Sample</span>
                 </div>
                 <div class="notice" id="limitNote" hidden>
-                  <p><strong>Free version:</strong> only the first 10 minutes were transcribed. A license unlocks recordings of any length.</p>
+                  <p><strong>Free version:</strong> only the first 2 minutes were transcribed. A license unlocks recordings of any length.</p>
                   <div class="notice-btns">
                     <a class="btn btn-buy buy small" data-short href="#price"><span class="buy-label">Buy</span></a>
                     <button class="btn btn-line small" type="button" id="limitKey">Enter license key</button>
@@ -733,7 +733,7 @@ dialog::backdrop{background:rgba(10,11,32,.72);backdrop-filter:blur(6px)}
       <div class="price-copy">
         
         <h2 style="font-size:clamp(36px,4.6vw,64px);line-height:1.02;letter-spacing:-0.035em">Pay once. Keep using it.</h2>
-        <p style="color:var(--muted);font-size:18px;margin-top:18px">Free for recordings up to 10 minutes. One payment unlocks any length. No monthly fees and no per-minute credits.</p>
+        <p style="color:var(--muted);font-size:18px;margin-top:18px">Free for recordings up to 2 minutes. One payment unlocks any length. No monthly fees and no per-minute credits.</p>
         <ul class="inc" id="inc"></ul>
         <div class="pay">
           <h3>How payment works</h3>
@@ -767,10 +767,10 @@ dialog::backdrop{background:rgba(10,11,32,.72);backdrop-filter:blur(6px)}
       <div class="faq">
         <details><summary>Which languages does it understand?<span class="plus" aria-hidden="true"></span></summary><p>Whisper supports 99 languages, including English, Spanish, German and French. Accuracy depends on the language and the recording quality. We will publish test results before launch.</p><p class="lang-list">All 99: <span id="langList"></span>.</p></details>
         <details><summary>Do I need a powerful computer?<span class="plus" aria-hidden="true"></span></summary><p>No. A recent computer is enough. In Chrome and Edge InkWhisper uses your graphics card, which is much faster. Phones work too, but long recordings are slow.</p></details>
-        <details><summary>How long can a recording be?<span class="plus" aria-hidden="true"></span></summary><p>Free: up to 10 minutes per recording. With a license there is no limit. Very long recordings simply take longer.</p></details>
+        <details><summary>How long can a recording be?<span class="plus" aria-hidden="true"></span></summary><p>Free: up to 2 minutes per recording. With a license there is no limit. Very long recordings simply take longer.</p></details>
         <details><summary>Can it tell who is speaking?<span class="plus" aria-hidden="true"></span></summary><p>The first version does not separate speakers. The transcript contains the text and timestamps.</p></details>
         <details><summary>How many devices can I use it on?<span class="plus" aria-hidden="true"></span></summary><p>The license is for one person in <span class="cfg-devices"></span>. To move it, open the license window, remove it from the old browser and enter the key in the new one.</p></details>
-        <details><summary>Can I try it before I buy?<span class="plus" aria-hidden="true"></span></summary><p>Yes. Recordings up to 10 minutes are free, with no account. Try it with your own files first, because all sales are final.</p></details>
+        <details><summary>Can I try it before I buy?<span class="plus" aria-hidden="true"></span></summary><p>Yes. Recordings up to 2 minutes are free, with no account. Try it with your own files first, because all sales are final.</p></details>
         <details><summary>Is this an OpenAI product?<span class="plus" aria-hidden="true"></span></summary><p>No. InkWhisper is an independent product. It uses Whisper, an open speech recognition model that OpenAI released under the MIT license.</p></details>
         <details><summary>Does it work on a Mac or a phone?<span class="plus" aria-hidden="true"></span></summary><p>Yes. It runs in a modern browser on Windows, Mac and Linux. Phones work too, but slowly.</p></details>
         <details><summary>Is my recording really not uploaded?<span class="plus" aria-hidden="true"></span></summary><p>Yes. Your browser downloads the speech model once, then does all the work on your device. The file you drop in never leaves it. Only the license check talks to a server, and it sends just your key.</p></details>
@@ -1113,7 +1113,7 @@ function capTick(dt){
 /* ---------- The transcriber (runs in this browser) ---------- */
 const TJS = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.2/dist/transformers.min.js';
 const MODELS = { fast: 'onnx-community/whisper-base', accurate: 'onnx-community/whisper-small' };
-const FREE_SECONDS = 600;          // free version: recordings up to 10 minutes
+const FREE_SECONDS = 120;          // free version: recordings up to 2 minutes
 const SR = 16000;
 const LANG_CODES = 'en zh de es ru ko fr ja pt tr pl ca nl ar sv it id hi fi vi he uk el ms cs ro da hu ta no th ur hr bg lt la mi ml cy sk te fa lv bn sr az sl kn et mk br eu is hy ne mn bs kk sq sw gl mr pa si km sn yo so af oc ka be tg sd gu am yi lo uz fo ht ps tk nn mt sa lb my bo tl mg as tt haw ln ha ba jw su'.split(' ');
 const langName = c => { const i = LANG_CODES.indexOf(c); return i >= 0 ? LANGS[i][1] : (c || 'Unknown'); };
@@ -1275,7 +1275,7 @@ $$('[data-dl]').forEach(b => b.addEventListener('click', () => download(b.datase
 function pickError(msg){ $('#pickErr').textContent = msg || ''; }
 function openPick(){ if (job) return; if (S.media) S.media.pause(); updatePlayButton(); pickError(''); refreshPickNote(); show('vPick'); }
 function refreshPickNote(){
-  $('#pickNote').textContent = (licensed() ? 'Licensed: recordings of any length. ' : 'Free for recordings up to 10 minutes. ') + 'The first time, the speech model downloads once and is saved in your browser.';
+  $('#pickNote').textContent = (licensed() ? 'Licensed: recordings of any length. ' : 'Free for recordings up to 2 minutes. ') + 'The first time, the speech model downloads once and is saved in your browser.';
 }
 $('#newBtn').addEventListener('click', openPick);
 $('#pickBack').addEventListener('click', () => show('vResult'));
