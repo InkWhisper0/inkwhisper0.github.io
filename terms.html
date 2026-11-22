@@ -43,8 +43,8 @@ p strong,li strong{color:var(--text)}
   <p>The price is shown on the website. It is a one-time payment, not a subscription. VAT or sales tax is added at checkout based on your country, as Polar calculates it.</p>
 
   <h2>Refunds</h2>
-  <p>If InkWhisper doesn’t work for you, write to <span class="cfg-email">[your email]</span> within <strong class="cfg-refund">14</strong> days of purchase and you get your money back. After a refund the license key stops working.</p>
-  <p>If you live in the EU, you have a legal right to withdraw from an online purchase within 14 days. For digital content this right can end once the download starts, if you agreed to that at checkout. Our refund promise above applies either way.</p>
+  <p><strong>All sales are final.</strong> Because you can try InkWhisper for free with recordings up to 10 minutes, we don’t offer refunds after purchase. Please test it with your own files before you buy.</p>
+  <p>This doesn’t limit any rights you have under the consumer law of your country. Polar, as the Merchant of Record, may also issue a refund in some cases, such as a duplicate charge or fraud. If a purchase is refunded, its license key stops working.</p>
 
   <h2>What you may do with the license</h2>
   <ul>
@@ -65,10 +65,10 @@ p strong,li strong{color:var(--text)}
 </main>
 <script>
 /* Fill these in once, and use the same values as CONFIG in index.html. */
-const LEGAL = { seller:'', email:'', address:'', devices:2, refundDays:14, date:'' };
+const LEGAL = { seller:'', email:'', address:'', devices:2, date:'' };
 const set = (c, v) => { if (v) document.querySelectorAll(c).forEach(e => { e.textContent = v; }); };
 set('.cfg-seller', LEGAL.seller); set('.cfg-address', LEGAL.address); set('.cfg-date', LEGAL.date);
-set('.cfg-devices', String(LEGAL.devices)); set('.cfg-refund', String(LEGAL.refundDays));
+set('.cfg-devices', String(LEGAL.devices));
 if (LEGAL.email) document.querySelectorAll('.cfg-email').forEach(e => { e.textContent = ''; const a = document.createElement('a'); a.href = 'mailto:' + LEGAL.email; a.textContent = LEGAL.email; e.appendChild(a); });
 </script>
 </body>

@@ -770,7 +770,7 @@ dialog::backdrop{background:rgba(10,11,32,.72);backdrop-filter:blur(6px)}
         <details><summary>How long can a recording be?<span class="plus" aria-hidden="true"></span></summary><p>Free: up to 10 minutes per recording. With a license there is no limit. Very long recordings simply take longer.</p></details>
         <details><summary>Can it tell who is speaking?<span class="plus" aria-hidden="true"></span></summary><p>The first version does not separate speakers. The transcript contains the text and timestamps.</p></details>
         <details><summary>How many devices can I use it on?<span class="plus" aria-hidden="true"></span></summary><p>The license is for one person in <span class="cfg-devices"></span>. To move it, open the license window, remove it from the old browser and enter the key in the new one.</p></details>
-        <details><summary>What if it doesn’t work for me?<span class="plus" aria-hidden="true"></span></summary><p>You get your money back within <span class="cfg-refund"></span> days of purchase. Just write to <span class="cfg-email"></span>.</p></details>
+        <details><summary>Can I try it before I buy?<span class="plus" aria-hidden="true"></span></summary><p>Yes. Recordings up to 10 minutes are free, with no account. Try it with your own files first, because all sales are final.</p></details>
         <details><summary>Is this an OpenAI product?<span class="plus" aria-hidden="true"></span></summary><p>No. InkWhisper is an independent product. It uses Whisper, an open speech recognition model that OpenAI released under the MIT license.</p></details>
         <details><summary>Does it work on a Mac or a phone?<span class="plus" aria-hidden="true"></span></summary><p>Yes. It runs in a modern browser on Windows, Mac and Linux. Phones work too, but slowly.</p></details>
         <details><summary>Is my recording really not uploaded?<span class="plus" aria-hidden="true"></span></summary><p>Yes. Your browser downloads the speech model once, then does all the work on your device. The file you drop in never leaves it. Only the license check talks to a server, and it sends just your key.</p></details>
@@ -965,7 +965,6 @@ const CONFIG = {
   polarSandbox: false,      // true while testing with sandbox.polar.sh (test card 4242 4242 4242 4242)
   launchDate: '',           // e.g. 'March 2027'; shown only in demo mode
   devices: 2,               // activation limit you set in Polar (License Keys benefit) = browsers per key
-  refundDays: 14,
   sellerName: '',           // your name or company
   email: '',                // contact email
   termsUrl: 'terms.html',   // terms of sale (fill in the LEGAL block inside terms.html)
@@ -1001,13 +1000,12 @@ function renderConfig(){
   $('#priceNote').textContent = CONFIG.vatIncluded ? 'One-time payment. VAT included.' : 'One-time payment. VAT is added at checkout based on your country.';
   const st = $('#status'); st.hidden = live; st.querySelector('span').textContent = 'In development. Launch: '+(CONFIG.launchDate || 'soon');
   const inc = $('#inc'); inc.textContent = '';
-  ['Recordings of any length','License for 1 person in '+pcs(CONFIG.devices),'Money back within '+CONFIG.refundDays+' days','License key by email right after payment'].forEach(t => {
+  ['Recordings of any length','License for 1 person in '+pcs(CONFIG.devices),'Try it free before you buy','License key by email right after payment'].forEach(t => {
     const li = document.createElement('li');
     li.innerHTML = '<svg viewBox="0 0 22 22" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 11.5l4.2 4.2L17.5 6.5"/></svg>';
     const sp = document.createElement('span'); sp.textContent = t; li.appendChild(sp); inc.appendChild(li);
   });
   $$('.cfg-devices').forEach(e => e.textContent = pcs(CONFIG.devices));
-  $$('.cfg-refund').forEach(e => e.textContent = CONFIG.refundDays);
   $$('.cfg-seller').forEach(e => e.textContent = CONFIG.sellerName || '[your name]');
   $$('.cfg-email').forEach(e => {
     e.textContent = '';
@@ -1437,7 +1435,7 @@ $('#keyForm').addEventListener('submit', async e => {
       // The key has no activation limit: just check that it is valid.
       const v = await polar('validate', { key });
       if (v.ok && v.data && v.data.status === 'granted') license = { key };
-      else throw { shown: 'This key isn’t active. If you got a refund, the key was turned off.' };
+      else throw { shown: 'This key isn’t active. The key may have been turned off.' };
     }
     else if (r.status === 404) throw { shown: 'That key doesn’t exist. Check for typos, or copy it again from your email.' };
     else if (r.status === 403) throw { shown: 'This key is already used in ' + CONFIG.devices + ' browsers. Remove it from one of them first, then try again.' };
